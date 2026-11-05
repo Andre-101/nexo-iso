@@ -64,7 +64,7 @@ services:
     logging: *small-logs
 
   db:
-    image: postgres:16-alpine
+    image: ${NEXO_DB_IMAGE:?Configure imagen PostgreSQL auditada GHCR por SHA}
     restart: unless-stopped
     environment:
       POSTGRES_USER: nexo

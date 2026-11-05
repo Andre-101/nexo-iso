@@ -26,6 +26,7 @@ test('VPS: despliegue independiente y aislado, sin puertos ni red v4nex', () => 
   assert.match(c,/no-new-privileges:true/);
   assert.match(c,/cap_drop: \[ALL\]/);
   assert.match(c,/NEXO_WEB_IMAGE/);
+  assert.match(c,/NEXO_DB_IMAGE/);
   assert.match(c,/REGISTRY_INTEGRATION_ENABLED: "0"/);
   assert.match(c,/FINANCE_INTEGRATION_ENABLED: "0"/);
 });
@@ -186,4 +187,20 @@ test('Nginx sin root y read_only utiliza rutas temporales en tmpfs escribible', 
     assert.match(c, /\/tmp:size=32m/);
     assert.doesNotMatch(c, /\/var\/cache\/nginx:size=/);
   }
+});
+
+
+test('PostgreSQL sustituye gosu-Go por su-exec y escanea la imagen final', () => {
+  const db=source('infra/Dockerfile.postgres.vps');
+  const workflow=source('.github/workflows/vps-images.yml');
+  const local=source('compose.local.yaml');
+  assert.match(db,/FROM postgres:16-alpine AS db/);
+  assert.match(db,/apk add --no-cache su-exec/);
+  assert.match(db,/rm -f \/usr\/local\/bin\/gosu/);
+  assert.match(db,/ln -s \/sbin\/su-exec \/usr\/local\/bin\/gosu/);
+  assert.match(local,/image: nexo-db:local/);
+  assert.match(local,/dockerfile: infra\/Dockerfile\.postgres\.vps/);
+  assert.match(workflow,/image-ref: nexo-db:scan/);
+  assert.match(workflow,/\{name: db, dockerfile: infra\/Dockerfile\.postgres\.vps, target: db\}/);
+  assert.match(workflow,/if: github.event_name == 'workflow_dispatch'/);
 });

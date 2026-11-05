@@ -5,7 +5,7 @@
 ## Topología exacta
 
 1. **PC Windows**: prueba local `http://localhost:8080`, Compose `name: nexo_local`. Puerto ligado **solo** a 127.0.0.1, por tanto no es accesible desde la LAN.
-2. **GitHub**: repositorio privado que conserva el código y genera imágenes por GitHub Actions. Imágenes `ghcr.io/USUARIO/nexo-web`, `ghcr.io/USUARIO/nexo-api`, `ghcr.io/USUARIO/nexo-bootstrap`. GHCR, NO los archivos Git, almacena los artefactos Docker.
+2. **GitHub**: repositorio privado que conserva el código y genera imágenes por GitHub Actions. Imágenes `ghcr.io/USUARIO/nexo-web`, `ghcr.io/USUARIO/nexo-api`, `ghcr.io/USUARIO/nexo-bootstrap`, `ghcr.io/USUARIO/nexo-db`. GHCR, NO los archivos Git, almacena los artefactos Docker.
 3. **VPS**: en `/opt/nexo` solo `compose.vps.yaml`, los scripts, secretos y `.env.production`; recibe las imágenes preconstruidas por `docker pull`. Sin `docker build`, Node, npm, Prisma ni código fuente en el host. Tres servicios continuos: `web` (Nginx :8080), `api` (Node :3000), `db` (PostgreSQL interno). Un contenedor `bootstrap` solo se usa manualmente al inicializar. **Cero puertos publicados en host**.
 4. **Red futura**: se crea una bridge Docker externa `nexo_link_ipv6`, con IPv6 ULA estática solo en `web`. **v4nex permanece independiente**. Cuando v4nex conecte uno de sus contenedores a esta red, usará `http://[IPv6_DE_NEXO]:8080`; el DNS, dominio, TLS y subdominio se gestionarán allí, no en Nexo. Una ULA `fdxx:` **no es IPv6 pública enrutable**: se comunica únicamente dentro de la red compartida.
 
@@ -43,7 +43,7 @@ docker compose --env-file .env.local -f compose.local.yaml config --quiet
 docker compose --env-file .env.local -f compose.local.yaml --profile bootstrap build
 ```
 
-El último comando **construye 3 imágenes locales** mediante Dockerfiles multi-stage, y puede tardar. Si falla, no continuar; enviar los logs del error, sin credenciales. **No usar `docker compose down -v`**: borra la base local Nexo.
+El último comando **construye 4 imágenes locales** mediante Dockerfiles multi-stage, y puede tardar. Si falla, no continuar; enviar los logs del error, sin credenciales. **No usar `docker compose down -v`**: borra la base local Nexo.
 
 Instalación de una **base nueva, vacía y exclusiva del proyecto local**:
 
@@ -90,7 +90,7 @@ docker compose --env-file .env.local -f compose.local.yaml stop
 
 ## 2. Subir el **código** a GitHub y generar las **imágenes** en GHCR
 
-1. Crear el repositorio independiente `Andre-101/nexo-iso` (actualmente público y vacío). No usar el repositorio de v4nex. Preferir repositorio privado antes de cargar código de producción, tras revisar el contenido.
+1. Utilizar el repositorio independiente `Andre-101/nexo-iso` (público). No usar el repositorio de v4nex. Preferir repositorio privado antes de cargar código de producción, tras revisar el contenido.
 2. Desde la raíz extraída de Nexo, comprobar que `git status` NO incluye `.env.local`, `.local-secrets`, `.env.production`, `.env.bridge`, tokens, volúmenes, logs ni datos reales. Git las ignora en `.gitignore`.
 3. Si es un repositorio nuevo, ejecutar en PowerShell (sustituir URL real):
 
@@ -107,7 +107,7 @@ git push -u origin main
 Si el repositorio ya existe y tiene cambios, **no ejecutar `git init` ni forzar `push`**: crear una rama y revisar las diferencias antes de fusionar.
 
 4. En GitHub → Actions → **NEXO | Auditar y publicar imágenes VPS** → `Run workflow` desde la rama revisada.
-5. El pipeline ejecuta: validación JS, 22 pruebas locales sin DB, `npm ci`, `npm audit --omit=dev --audit-level=high`, construcción y prueba con PostgreSQL, escaneo Trivy de imágenes (incluyendo PostgreSQL) y publicación en GHCR de `web`, `api` y `bootstrap` **solo después** de superar los controles.
+5. El pipeline ejecuta: validación JS, 22 pruebas locales sin DB, `npm ci`, `npm audit --omit=dev --audit-level=high`, construcción y prueba con PostgreSQL, escaneo Trivy de imágenes (incluyendo PostgreSQL) y publicación en GHCR de `web`, `api`, `bootstrap` y `db` **solo después** de superar los controles.
 6. Revisar que todos los jobs estén **verdes**; no sustituir imágenes ni reducir la seguridad para evitar un fallo. GHCR vincula los paquetes con el repositorio que ejecutó el workflow. No se requiere PAT de publicación en Actions: usa `GITHUB_TOKEN` con `packages: write`.
 7. Copiar el SHA completo de 40 caracteres del commit. Los nombres son:
 
@@ -115,6 +115,7 @@ Si el repositorio ya existe y tiene cambios, **no ejecutar `git init` ni forzar 
 ghcr.io/USUARIO/nexo-web:sha-COMMIT_SHA
 ghcr.io/USUARIO/nexo-api:sha-COMMIT_SHA
 ghcr.io/USUARIO/nexo-bootstrap:sha-COMMIT_SHA
+ghcr.io/USUARIO/nexo-db:sha-COMMIT_SHA
 ```
 
 Los tres `USUARIO` deben estar en minúsculas. Cuando GHCR muestre digests verificados, es preferible sustituir posteriormente los tags por `@sha256:...` para inmovilidad del despliegue.
@@ -142,7 +143,7 @@ bash scripts/prepare-vps-secrets.sh /opt/nexo/secrets
 nano .env.production
 ```
 
-Editar en `.env.production` las tres imágenes GHCR con usuario y SHA **reales**. Conservar ruta de secretos `/opt/nexo/secrets`. No poner credenciales en el `.env`. Los secretos generados son SOLO de Nexo (DB, URL de DB, JWT), no se toman de v4nex. Respaldarlos de forma segura: perder DB password o JWT puede bloquear accesos; cambiar JWT invalida sesiones.
+Editar en `.env.production` las cuatro imágenes GHCR con usuario y SHA **reales**. Conservar ruta de secretos `/opt/nexo/secrets`. No poner credenciales en el `.env`. Los secretos generados son SOLO de Nexo (DB, URL de DB, JWT), no se toman de v4nex. Respaldarlos de forma segura: perder DB password o JWT puede bloquear accesos; cambiar JWT invalida sesiones.
 
 ### Autenticación de GHCR, si las imágenes son privadas
 
@@ -270,3 +271,25 @@ El primer comando de bootstrap (`run --rm --no-deps bootstrap`, sin comando adic
 No colocar contraseñas de administrador en GitHub, Dockerfile, `.env` o argumentos de consola. El runner de CI, si ejecuta prueba de alta ADMIN, utiliza una cuenta de prueba aleatoria en una base efímera de Actions; no crea la cuenta real de la VPS.
 
 **Lanzadores opcionales incluidos:** `scripts/create-admin-local.ps1` para Windows y `scripts/create-admin-vps.sh` para Linux; ambos requieren una terminal interactiva y que la API ya funcione. No cambian datos ni vuelven a crear un ADMIN existente.
+
+
+## Incidente CVE `gosu` en imagen oficial PostgreSQL (5-nov-2026)
+
+El workflow inicial falló en `scan-database`: Trivy detectó 26 avisos (25 HIGH, 1 CRITICAL)
+correspondientes a la biblioteca estándar de Go compilada en `/usr/local/bin/gosu` v1.19 de
+la imagen oficial `postgres:16-alpine`. Alpine no registró CVE en ese escaneo. El proyecto
+gosu advierte que muchas alertas de biblioteca estándar no son alcanzables y recomienda
+verificar alcance antes de considerar explotables los CVE.
+
+NEXO conserva PostgreSQL 16 y su `docker-entrypoint.sh`, pero genera una imagen derivada
+`nexo-db` con `su-exec` (C, repositorio oficial de paquetes Alpine) sustituyendo el binario
+`gosu`. El nombre `gosu` permanece como enlace a `su-exec` para compatibilidad con
+el entrypoint de PostgreSQL. `scan-database` construye y audita **esa misma variante**, y
+`smoke-local` repite la inicialización, login ADMIN y persistencia tras reinicio.
+
+- No ejecutar `docker compose down -v` ni cambiar la versión mayor de PostgreSQL.
+- La sustitución es de **binario auxiliar**, no convierte ni elimina datos.
+- La imagen se considera aprobada solo cuando build, escaneo Trivy y smoke real pasen.
+- En VPS: añadir `NEXO_DB_IMAGE=ghcr.io/USUARIO/nexo-db:sha-SHA` a `.env.production`.
+- Los primeros tests se ejecutan por Pull Request sin publicar en GHCR; la publicación
+  exige lanzar manualmente el workflow en la rama `main` después de fusionar.

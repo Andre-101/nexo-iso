@@ -19,3 +19,9 @@
 **No equivale a producción certificada:** dependencias/OS deben pasar `npm audit`/Trivy con red, Docker y pruebas de flujos multiempresa, uploads PDF, backups y proveedores, además de revisión legal.
 
 Para validar JS sin Docker (si Node 22 está disponible): `node --test tests/frontend-unit.test.js tests/vps-security.test.js`. Para probar de verdad, seguir el manual con Docker.
+
+
+> **PostgreSQL auditado (nov. 2026):** se construye una cuarta imagen
+> `nexo-db` desde `postgres:16-alpine`, reemplazando el ejecutable `gosu`
+> (Go 1.24.6 con 26 avisos de Trivy; alcance práctico por evaluar) por `su-exec` y manteniendo el entrypoint
+> y el volumen original. Ver `docs/DESPLIEGUE_PASO_A_PASO.md`.

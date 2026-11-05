@@ -1,9 +1,10 @@
 name: NEXO | Auditar y publicar imágenes VPS
 on:
   workflow_dispatch:
+  pull_request:
+    branches: [main]
 permissions:
   contents: read
-  packages: write
 concurrency:
   group: nexo-images-${{ github.ref }}
   cancel-in-progress: false
@@ -40,7 +41,7 @@ jobs:
           bash scripts/prepare-local-secrets.sh
       - name: Validar Compose
         run: docker compose --env-file .env.local -f compose.local.yaml config --quiet
-      - name: Construir las 3 imágenes Docker de prueba
+      - name: Construir las 4 imágenes Docker de prueba
         run: docker compose --env-file .env.local -f compose.local.yaml --profile bootstrap build
       - name: Arrancar PostgreSQL y crear esquema en base NUEVA
         run: |
@@ -94,11 +95,18 @@ jobs:
     needs: security-and-tests
     runs-on: ubuntu-24.04
     steps:
-      - name: Escanear también PostgreSQL antes de publicar imágenes de Nexo
+      - uses: actions/checkout@v6
+      - name: Construir variante PostgreSQL sin gosu vulnerable
+        run: docker build --pull --file infra/Dockerfile.postgres.vps --target db --tag nexo-db:scan .
+      - name: Verificar el cambio de privilegios a postgres
+        run: |
+          docker run --rm --entrypoint /bin/sh nexo-db:scan -ec \
+            'test "$(readlink -f /usr/local/bin/gosu)" = /sbin/su-exec; test "$(gosu postgres id -u)" = 70'
+      - name: Escanear PostgreSQL endurecido antes de publicar imágenes de Nexo
         uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: image
-          image-ref: postgres:16-alpine
+          image-ref: nexo-db:scan
           format: table
           vuln-type: os,library
           severity: HIGH,CRITICAL
@@ -106,8 +114,12 @@ jobs:
           exit-code: '1'
 
   publish:
+    if: github.event_name == 'workflow_dispatch'
     needs: [security-and-tests, smoke-local, scan-database]
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
     strategy:
       fail-fast: true
       matrix:
@@ -115,6 +127,7 @@ jobs:
           - {name: web, dockerfile: infra/Dockerfile.web.vps, target: web}
           - {name: api, dockerfile: infra/Dockerfile.vps, target: api}
           - {name: bootstrap, dockerfile: infra/Dockerfile.vps, target: bootstrap}
+          - {name: db, dockerfile: infra/Dockerfile.postgres.vps, target: db}
     steps:
       - uses: actions/checkout@v6
       - name: Normalizar usuario GHCR
