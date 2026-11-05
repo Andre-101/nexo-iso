@@ -1,0 +1,23 @@
+{
+  "name": "NEXO · Consultoría ISO/IEC 27001 y 42001",
+  "short_name": "NEXO",
+  "description": "Portal de acompañamiento para la preparación de sistemas ISO/IEC 27001 e ISO/IEC 42001. No emite certificaciones.",
+  "start_url": ".",
+  "display": "standalone",
+  "scope": ".",
+  "background_color": "#0a111f",
+  "theme_color": "#101b31",
+  "orientation": "portrait",
+  "categories": [
+    "business",
+    "productivity"
+  ],
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

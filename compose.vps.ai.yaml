@@ -1,0 +1,13 @@
+# Anexo OPCIONAL; NUNCA usar con documentos reales sin base legal, autorización y proveedor revisado.
+services:
+  api:
+    environment:
+      AI_ENABLED: "1"
+      AI_PROVIDER: anthropic
+      AI_EXTERNAL_TRANSFER_APPROVED: ${AI_EXTERNAL_TRANSFER_APPROVED:-0}
+      ANTHROPIC_API_KEY_FILE: /run/secrets/nexo_anthropic_key
+    secrets:
+      - nexo_anthropic_key
+secrets:
+  nexo_anthropic_key:
+    file: ${NEXO_SECRETS_DIR:?Ruta de secretos}/anthropic_key

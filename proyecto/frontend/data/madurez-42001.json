@@ -1,0 +1,265 @@
+{
+  "version": "orientativo-348",
+  "aprobado": false,
+  "preguntas": [
+    {
+      "id": "M42001-01-01",
+      "dominio": "Contexto y alcance",
+      "referenciaOrientativa": "4.1–4.4",
+      "pregunta": "¿La organización ha delimitado qué sistemas y usos de IA gestiona y cuáles quedan fuera del alcance?",
+      "evidenciaSugerida": "Inventario de sistemas, límites y criterios de inclusión."
+    },
+    {
+      "id": "M42001-01-02",
+      "dominio": "Contexto y alcance",
+      "referenciaOrientativa": "4.1–4.4",
+      "pregunta": "¿Se han identificado partes interesadas, usuarios y personas potencialmente afectadas por esos usos?",
+      "evidenciaSugerida": "Mapa de actores y necesidades."
+    },
+    {
+      "id": "M42001-01-03",
+      "dominio": "Contexto y alcance",
+      "referenciaOrientativa": "4.1–4.4",
+      "pregunta": "¿Se documentan requisitos legales, sectoriales y contractuales aplicables a cada uso de IA?",
+      "evidenciaSugerida": "Registro normativo con jurisdicción y fechas."
+    },
+    {
+      "id": "M42001-01-04",
+      "dominio": "Contexto y alcance",
+      "referenciaOrientativa": "4.1–4.4",
+      "pregunta": "¿Se revisa el alcance del sistema de gestión cuando cambia el negocio o los usos de IA?",
+      "evidenciaSugerida": "Actas de revisión de alcance."
+    },
+    {
+      "id": "M42001-02-01",
+      "dominio": "Liderazgo y responsabilidad",
+      "referenciaOrientativa": "5",
+      "pregunta": "¿Existe una política de IA responsable aprobada y conocida por quienes toman decisiones?",
+      "evidenciaSugerida": "Política fechada, difusión y aceptación."
+    },
+    {
+      "id": "M42001-02-02",
+      "dominio": "Liderazgo y responsabilidad",
+      "referenciaOrientativa": "5",
+      "pregunta": "¿Hay responsables definidos para riesgos, impactos, datos, decisiones y supervisión humana?",
+      "evidenciaSugerida": "RACI y designaciones."
+    },
+    {
+      "id": "M42001-02-03",
+      "dominio": "Liderazgo y responsabilidad",
+      "referenciaOrientativa": "5",
+      "pregunta": "¿La alta dirección conoce las decisiones y recursos pendientes del sistema de gestión?",
+      "evidenciaSugerida": "Actas e informes a dirección."
+    },
+    {
+      "id": "M42001-02-04",
+      "dominio": "Liderazgo y responsabilidad",
+      "referenciaOrientativa": "5",
+      "pregunta": "¿Se habilita la escalación de conflictos o eventos de IA sin represalias ni bloqueo informal?",
+      "evidenciaSugerida": "Procedimiento y canal de escalamiento."
+    },
+    {
+      "id": "M42001-03-01",
+      "dominio": "Riesgos, impactos y planificación",
+      "referenciaOrientativa": "6.1–6.3; 8.2–8.4",
+      "pregunta": "¿Hay criterios documentados para aceptar, tratar y escalar riesgos específicos de IA?",
+      "evidenciaSugerida": "Metodología y criterios aprobados."
+    },
+    {
+      "id": "M42001-03-02",
+      "dominio": "Riesgos, impactos y planificación",
+      "referenciaOrientativa": "6.1–6.3; 8.2–8.4",
+      "pregunta": "¿Se valoran riesgos de uso previsto, mal uso razonable, fallos, sesgos y dependencia de proveedores?",
+      "evidenciaSugerida": "Registro por caso de uso con escenarios."
+    },
+    {
+      "id": "M42001-03-03",
+      "dominio": "Riesgos, impactos y planificación",
+      "referenciaOrientativa": "6.1–6.3; 8.2–8.4",
+      "pregunta": "¿Se evalúan impactos sobre personas y grupos afectados antes de cambios significativos?",
+      "evidenciaSugerida": "Informes de impacto y seguimiento."
+    },
+    {
+      "id": "M42001-03-04",
+      "dominio": "Riesgos, impactos y planificación",
+      "referenciaOrientativa": "6.1–6.3; 8.2–8.4",
+      "pregunta": "¿Cada riesgo relevante tiene responsable, tratamiento, fecha y evidencia de seguimiento?",
+      "evidenciaSugerida": "Plan y responsables de tratamiento."
+    },
+    {
+      "id": "M42001-03-05",
+      "dominio": "Riesgos, impactos y planificación",
+      "referenciaOrientativa": "6.1–6.3; 8.2–8.4",
+      "pregunta": "¿Los cambios importantes del sistema de IA disparan una revisión de riesgos e impactos?",
+      "evidenciaSugerida": "Reglas de cambio, incidentes y reevaluación."
+    },
+    {
+      "id": "M42001-04-01",
+      "dominio": "Recursos y sostenibilidad",
+      "referenciaOrientativa": "7.1–7.3; Anexo A.4 (orientativo)",
+      "pregunta": "¿Se identifican y justifican recursos humanos, tecnológicos y de datos necesarios para operar cada sistema de IA?",
+      "evidenciaSugerida": "Inventario de capacidades y responsables."
+    },
+    {
+      "id": "M42001-04-02",
+      "dominio": "Recursos y sostenibilidad",
+      "referenciaOrientativa": "7.1–7.3; Anexo A.4 (orientativo)",
+      "pregunta": "¿Se dispone de una asignación presupuestal aprobada y suficiente para las actividades de gestión y supervisión de IA?",
+      "evidenciaSugerida": "Acta presupuestal autorizada; no requiere revelar saldos bancarios."
+    },
+    {
+      "id": "M42001-04-03",
+      "dominio": "Recursos y sostenibilidad",
+      "referenciaOrientativa": "7.1–7.3; Anexo A.4 (orientativo)",
+      "pregunta": "¿Se contempla continuidad financiera para pruebas, monitoreo, respuesta a incidentes y retiro de sistemas de IA?",
+      "evidenciaSugerida": "Plan de costos del ciclo de vida y contingencias."
+    },
+    {
+      "id": "M42001-04-04",
+      "dominio": "Recursos y sostenibilidad",
+      "referenciaOrientativa": "7.1–7.3; Anexo A.4 (orientativo)",
+      "pregunta": "¿El personal cuenta con competencias adecuadas y se verifica la efectividad de su formación?",
+      "evidenciaSugerida": "Matriz de competencias, capacitación y evaluación."
+    },
+    {
+      "id": "M42001-04-05",
+      "dominio": "Recursos y sostenibilidad",
+      "referenciaOrientativa": "7.1–7.3; Anexo A.4 (orientativo)",
+      "pregunta": "¿Se controlan comunicaciones y registros documentados esenciales para la operación del sistema?",
+      "evidenciaSugerida": "Procedimiento documental y evidencias de comunicaciones."
+    },
+    {
+      "id": "M42001-05-01",
+      "dominio": "Ciclo de vida y control operacional",
+      "referenciaOrientativa": "8.1; Anexo A.6 (orientativo)",
+      "pregunta": "¿Cada sistema de IA tiene propósito, límites, propietario y requisitos de aceptación documentados?",
+      "evidenciaSugerida": "Ficha de sistema y criterios de aceptación."
+    },
+    {
+      "id": "M42001-05-02",
+      "dominio": "Ciclo de vida y control operacional",
+      "referenciaOrientativa": "8.1; Anexo A.6 (orientativo)",
+      "pregunta": "¿Se documentan pruebas apropiadas antes de poner en funcionamiento o modificar el sistema?",
+      "evidenciaSugerida": "Protocolo, resultados y aprobación humana."
+    },
+    {
+      "id": "M42001-05-03",
+      "dominio": "Ciclo de vida y control operacional",
+      "referenciaOrientativa": "8.1; Anexo A.6 (orientativo)",
+      "pregunta": "¿Se monitorizan resultados, desviaciones y eventos en operación con umbrales pertinentes?",
+      "evidenciaSugerida": "Registros de seguimiento, métricas y alertas."
+    },
+    {
+      "id": "M42001-05-04",
+      "dominio": "Ciclo de vida y control operacional",
+      "referenciaOrientativa": "8.1; Anexo A.6 (orientativo)",
+      "pregunta": "¿Hay procesos controlados de cambio, retirada y desactivación de sistemas de IA?",
+      "evidenciaSugerida": "Plan de cambios, baja y reversión."
+    },
+    {
+      "id": "M42001-06-01",
+      "dominio": "Datos y calidad",
+      "referenciaOrientativa": "Anexo A.7 (orientativo)",
+      "pregunta": "¿Los datos utilizados para IA tienen procedencia, legitimidad y permisos de uso documentados?",
+      "evidenciaSugerida": "Fichas de origen, bases legales y licencias."
+    },
+    {
+      "id": "M42001-06-02",
+      "dominio": "Datos y calidad",
+      "referenciaOrientativa": "Anexo A.7 (orientativo)",
+      "pregunta": "¿Se comprueba la calidad, representatividad y adecuación de los datos para el uso previsto?",
+      "evidenciaSugerida": "Informes de calidad y revisión de sesgos."
+    },
+    {
+      "id": "M42001-06-03",
+      "dominio": "Datos y calidad",
+      "referenciaOrientativa": "Anexo A.7 (orientativo)",
+      "pregunta": "¿Se controla el acceso, conservación y eliminación de datos usados y generados por IA?",
+      "evidenciaSugerida": "Matriz de accesos y políticas de retención."
+    },
+    {
+      "id": "M42001-06-04",
+      "dominio": "Datos y calidad",
+      "referenciaOrientativa": "Anexo A.7 (orientativo)",
+      "pregunta": "¿Se detectan cambios en datos o distribuciones que exijan nueva evaluación del sistema?",
+      "evidenciaSugerida": "Monitoreo de deriva y acciones."
+    },
+    {
+      "id": "M42001-07-01",
+      "dominio": "Transparencia y uso responsable",
+      "referenciaOrientativa": "Anexo A.5/A.8 (orientativo)",
+      "pregunta": "¿Se informa de manera adecuada a usuarios y personas afectadas sobre el uso de IA?",
+      "evidenciaSugerida": "Avisos, manuales, avisos de limitaciones."
+    },
+    {
+      "id": "M42001-07-02",
+      "dominio": "Transparencia y uso responsable",
+      "referenciaOrientativa": "Anexo A.5/A.8 (orientativo)",
+      "pregunta": "¿Existen mecanismos para intervención humana, revisión y reclamaciones según el contexto?",
+      "evidenciaSugerida": "Canales, acuerdos de servicio y casos resueltos."
+    },
+    {
+      "id": "M42001-07-03",
+      "dominio": "Transparencia y uso responsable",
+      "referenciaOrientativa": "Anexo A.5/A.8 (orientativo)",
+      "pregunta": "¿Se documentan restricciones, supuestos y limitaciones que los usuarios deben conocer?",
+      "evidenciaSugerida": "Fichas de uso y advertencias."
+    },
+    {
+      "id": "M42001-07-04",
+      "dominio": "Transparencia y uso responsable",
+      "referenciaOrientativa": "Anexo A.5/A.8 (orientativo)",
+      "pregunta": "¿Se revisan impactos potencialmente adversos y medidas de mitigación sin automatizar conclusiones favorables?",
+      "evidenciaSugerida": "Evaluaciones de impacto y decisiones humanas."
+    },
+    {
+      "id": "M42001-08-01",
+      "dominio": "Terceros y obligaciones",
+      "referenciaOrientativa": "Anexo A.9/A.10 (orientativo)",
+      "pregunta": "¿Se evalúan proveedores de modelos, datos, infraestructura y servicios externos antes de su uso?",
+      "evidenciaSugerida": "Evaluaciones de terceros y contratos."
+    },
+    {
+      "id": "M42001-08-02",
+      "dominio": "Terceros y obligaciones",
+      "referenciaOrientativa": "Anexo A.9/A.10 (orientativo)",
+      "pregunta": "¿Se establecen responsabilidades y canales para incidentes, cambios y acceso a evidencia con terceros?",
+      "evidenciaSugerida": "Contratos, acuerdos y procedimientos."
+    },
+    {
+      "id": "M42001-08-03",
+      "dominio": "Terceros y obligaciones",
+      "referenciaOrientativa": "Anexo A.9/A.10 (orientativo)",
+      "pregunta": "¿Se verifica que el uso de IA por clientes y usuarios esté sujeto a condiciones comunicadas?",
+      "evidenciaSugerida": "Términos de uso, capacitación y confirmaciones."
+    },
+    {
+      "id": "M42001-09-01",
+      "dominio": "Evaluación, auditoría y mejora",
+      "referenciaOrientativa": "9–10",
+      "pregunta": "¿Hay indicadores y periodicidad definidos para evaluar la eficacia del sistema de gestión de IA?",
+      "evidenciaSugerida": "Panel de indicadores y revisiones."
+    },
+    {
+      "id": "M42001-09-02",
+      "dominio": "Evaluación, auditoría y mejora",
+      "referenciaOrientativa": "9–10",
+      "pregunta": "¿Se realizan auditorías internas con independencia y un programa documentado?",
+      "evidenciaSugerida": "Programa, informes y competencias."
+    },
+    {
+      "id": "M42001-09-03",
+      "dominio": "Evaluación, auditoría y mejora",
+      "referenciaOrientativa": "9–10",
+      "pregunta": "¿La dirección revisa resultados, riesgos y mejoras pendientes del sistema de gestión?",
+      "evidenciaSugerida": "Actas de revisión y decisiones."
+    },
+    {
+      "id": "M42001-09-04",
+      "dominio": "Evaluación, auditoría y mejora",
+      "referenciaOrientativa": "9–10",
+      "pregunta": "¿Los incidentes y no conformidades generan correcciones verificables y análisis de causas?",
+      "evidenciaSugerida": "Registros de acciones correctivas y cierre."
+    }
+  ]
+}

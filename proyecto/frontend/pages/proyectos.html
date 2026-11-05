@@ -1,0 +1,648 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="referrer" content="no-referrer" />
+  <link rel="stylesheet" href="../styles.css" />
+  <title>Proyectos · NEXO ISO/IEC 27001 y 42001</title>
+</head>
+<body data-protected>
+<main class="g1-layout">
+  <header class="page-heading workspace-heading">
+    <div><span class="eyebrow">ESPACIO DE TRABAJO · EXPEDIENTES</span><h1>Proyectos de consultoría</h1><p class="g1-muted">Elige primero un expediente. Después consulta las secciones y tareas que correspondan a tu responsabilidad.</p><p id="identity" class="g1-muted"></p></div>
+    <div class="g1-actions"><a href="./evaluaciones.html" class="text-link">Ver diagnósticos →</a></div>
+  </header>
+  <section class="role-guide" id="guideExpedientes" aria-labelledby="projectGuideHeading"><div><span class="eyebrow" id="projectGuideLabel">ORGANIZACIÓN DEL TRABAJO</span><h2 id="projectGuideHeading">Cada proyecto conserva su propio proceso.</h2><p id="projectGuideDescription">Selecciona un expediente para trabajar dentro de su contexto. Los estados y permisos proceden del servidor.</p></div><nav class="role-guide-links" id="projectGuideLinks" aria-label="Atajos del expediente"><a href="#projectCollection">Ver lista de expedientes ↗</a></nav></section>
+  <div id="feedback" role="status" aria-live="polite" class="g1-alert g1-hide"></div>
+  <section class="g1-panel g1-hide" id="notificationsArea" aria-labelledby="notificationsTitle">
+    <div class="g1-toolbar"><h2 id="notificationsTitle">Notificaciones de cambios de plazo</h2><button type="button" id="notificationsReload" class="secondary">Actualizar avisos</button></div>
+    <p id="notificationsCount" role="status" aria-live="polite" class="g1-muted">Consultando avisos…</p>
+    <p class="g1-muted">Los cambios de fecha quedan registrados, incluso si no estás conectado. El aviso se registra como leído automáticamente al abrirlo, si tu cuenta está autorizada.</p>
+    <div id="notificationsList" class="g1-grid" aria-busy="false"></div>
+  </section>
+  <section class="g1-panel" id="projectCollection" aria-labelledby="projectsHeading">
+    <div class="g1-toolbar"><h2 id="projectsHeading" tabindex="-1">Mis proyectos</h2><a id="nexoOpenAdminArea" href="#adminArea" class="secondary-link g1-hide">Abrir un proyecto contratado</a><button type="button" id="reload">Actualizar</button></div>
+    <div class="workspace-filter" role="search" aria-label="Filtrar proyectos">
+      <label for="searchProjects">Buscar por proyecto o empresa
+        <input id="searchProjects" type="search" autocomplete="off" placeholder="Nombre, empresa o identificador" />
+      </label>
+      <label for="filterProjectState">Estado
+        <select id="filterProjectState"><option value="TODOS">Todos los estados</option><option value="ACTIVO">Activos</option><option value="OTROS">Otros estados</option></select>
+      </label>
+      <button type="button" id="clearProjectFilters" class="secondary">Limpiar filtros</button>
+    </div>
+    <p id="projectsSummary" class="g1-muted" role="status" aria-live="polite">Consultando proyectos…</p>
+    <div id="projects" class="g1-grid" aria-busy="false"></div>
+  </section>
+  <section class="g1-panel g1-hide" id="adminArea">
+    <h2>Administración del servicio</h2>
+    <p class="g1-muted">ADMIN vincula cada representante por NIT. Los datos del proveedor no se editan; ante un fallo, pueden aportarse datos provisionales sustentados. La vinculación no sustituye los acuerdos contractuales.</p>
+    <div class="g1-grid">
+      <form id="empresaFormG1" class="g1-form">
+        <h3>Vincular representante mediante NIT</h3>
+        <p class="g1-muted">Se consultará el catálogo registral ficticio. No se crea una empresa mediante un trámite independiente.</p>
+        <label>Representante activo<select name="usuarioId" id="representanteSelect" required><option value="">Cargando representantes…</option></select></label>
+        <label>NIT de la empresa<input name="nit" required maxlength="32" autocomplete="off" /></label>
+        <label>Constancia de representación revisada por ADMIN<textarea name="constanciaRepresentacion" required minlength="10" maxlength="2000" rows="3" placeholder="Fuente, comprobación y fundamento de la vinculación. No incluya secretos."></textarea></label>
+        <label><input type="checkbox" id="usarDatosProvisionales" /> Aportar información verificada por otros medios (fallo o diferencia de la consulta)</label>
+        <div id="camposProvisionales" class="g1-hide">
+          <p class="g1-muted">Los datos manuales se conservarán separados de la respuesta del proveedor y sujetos a conciliación posterior.</p>
+          <label>Razón social provisional<input name="nombreProvisional" maxlength="200" disabled /></label>
+          <label>Sector provisional<input name="sectorProvisional" maxlength="160" disabled /></label>
+          <label>Tamaño provisional<input name="tamanoProvisional" maxlength="100" disabled /></label>
+          <label>Fuente alternativa y justificación<textarea name="referenciaExterna" minlength="10" maxlength="2000" rows="3" disabled></textarea></label>
+        </div>
+        <button type="submit">Consultar NIT y vincular representante</button>
+      </form>
+      <form id="projectForm" class="g1-form">
+        <h3>Activar proyecto contratado</h3>
+        <label>Empresa vinculada<select name="empresaId" id="empresaSelect" required><option value="">Cargando empresas…</option></select></label>
+        <label>Norma y edición contratadas
+          <select name="servicioNormativo" id="servicioNormativo" required>
+            <option value="">Selecciona la norma y edición</option>
+            <option value="ISO_27001/2022">ISO/IEC 27001:2022</option>
+            <option value="ISO_42001/2023">ISO/IEC 42001:2023</option>
+          </select>
+        </label>
+        <label>Consultor principal<select name="consultorPrincipalId" id="consultorPrincipalSelect" required><option value="">Cargando consultores…</option></select></label>
+        <label>Nombre del proyecto<input name="nombre" required maxlength="200" /></label>
+        <label>Referencia del contrato<input name="referenciaContrato" required maxlength="120" /></label>
+        <label>Alcance contractual<textarea name="alcanceContractual" required maxlength="12000" rows="3"></textarea></label>
+        <label>Alcance SGSI propuesto (no aprobado)<textarea name="alcanceSGSIPropuesto" rows="2"></textarea></label>
+        <button type="submit">Activar proyecto</button>
+      </form>
+    </div>
+    <form id="assignForm" class="g1-form">
+      <h3>Asignar consultor a proyecto</h3>
+      <label>Proyecto<select name="proyectoId" id="proyectoAsignarSelect" required><option value="">Cargando proyectos…</option></select></label>
+      <label>Consultor<select name="usuarioId" id="consultorAsignarSelect" required><option value="">Cargando consultores…</option></select></label>
+      <label><input type="checkbox" name="principal" /> Designar como consultor principal</label>
+      <button type="submit">Guardar asignación</button>
+    </form>
+  </section>
+  <section class="g1-panel g1-hide" id="projectDetail" aria-labelledby="projectTitle">
+    <div class="case-toolbar"><h2 id="projectTitle" tabindex="-1">Proyecto</h2><button type="button" id="returnToProjects" class="secondary">Volver a mis proyectos</button></div>
+    <nav class="case-index" id="caseIndex" aria-label="Ir a una sección del expediente">
+      <span class="case-index-label">En este expediente</span>
+      <a href="#diagnosticos">Diagnósticos</a>
+      <a href="#planSection">Plan de trabajo</a>
+      <a href="#actividades">Actividades</a>
+      <a href="#brechas">Brechas</a>
+      <a href="#attentionWorkspace">Bandeja de atención</a>
+      <a href="#g2Area">Evidencias e informes</a>
+      <a href="#additionalSection">Servicios adicionales</a>
+      <a href="#retentionSection">Conservación</a>
+      <a href="#g3Area">IA documental</a>
+    </nav>
+    <section id="caseActionHub" class="case-action-hub g1-hide" aria-labelledby="caseActionHubTitle">
+      <div><h3 id="caseActionHubTitle">Acciones del expediente</h3>
+        <p class="g1-muted">Accede a las operaciones disponibles para tu participación. Los permisos se comprueban al guardar.</p></div>
+      <div class="case-action-shortcuts" role="group" aria-label="Crear y gestionar">
+        <button type="button" id="caseStartBreach" class="secondary g1-hide" aria-controls="caseBreachPanel">Registrar brecha</button>
+        <button type="button" id="caseStartActivity" class="secondary g1-hide" aria-controls="caseTaskPanel">Crear actividad</button>
+        <button type="button" id="caseStartPlan" class="secondary g1-hide" aria-controls="casePlanPanel">Gestionar plan</button>
+      </div>
+    </section>
+    <section class="case-overview" id="caseOverview" aria-labelledby="caseOverviewHeading" aria-busy="false">
+      <div class="case-overview-heading"><div><h3 id="caseOverviewHeading">Resumen operativo</h3><p class="g1-muted">Estado de las actividades de este expediente. Selecciona una categoría para consultar el detalle.</p></div><span id="caseOverviewStatus" class="g1-muted" role="status" aria-live="polite">Cargando actividades…</span></div>
+      <div class="case-metrics" role="group" aria-label="Filtrar actividades por estado">
+        <button type="button" class="case-metric" data-task-state="TODAS" aria-pressed="true"><span>Todas</span><strong data-task-count="TODAS">—</strong></button>
+        <button type="button" class="case-metric" data-task-state="PENDIENTE" aria-pressed="false"><span>Pendientes</span><strong data-task-count="PENDIENTE">—</strong></button>
+        <button type="button" class="case-metric" data-task-state="EN_PROGRESO" aria-pressed="false"><span>En progreso</span><strong data-task-count="EN_PROGRESO">—</strong></button>
+        <button type="button" class="case-metric" data-task-state="EN_REVISION" aria-pressed="false"><span>En revisión</span><strong data-task-count="EN_REVISION">—</strong></button>
+        <button type="button" class="case-metric" data-task-state="COMPLETADA" aria-pressed="false"><span>Completadas</span><strong data-task-count="COMPLETADA">—</strong></button>
+      </div>
+    </section>
+    <section id="attentionWorkspace" class="attention-workspace g1-hide" aria-labelledby="attentionTitle" aria-busy="true">
+      <div class="attention-heading">
+        <div><h3 id="attentionTitle">Bandeja de atención · Consultor principal</h3>
+          <p class="g1-muted">Pendientes de seguimiento reunidos desde las actividades y los entregables del expediente. No otorga permisos ni aprueba automáticamente.</p></div>
+        <span id="attentionStatus" role="status" aria-live="polite">Cargando información…</span>
+      </div>
+      <div id="attentionMetrics" class="attention-metrics" aria-label="Pendientes por tipo"></div>
+      <div id="attentionRows" class="attention-rows" aria-live="off"></div>
+      <div class="attention-footer"><span id="attentionSummary" class="g1-muted"></span><button type="button" class="secondary" id="attentionMore" hidden>Mostrar todos</button></div>
+    </section>
+    <p id="projectDesc" class="g1-muted"></p><div id="projectTeam" class="project-team g1-hide" aria-live="polite"></div>
+    <section class="g1-panel" id="planSection" aria-labelledby="planTitle">
+      <h3 id="planTitle">Plan de trabajo — versiones y aceptación (REQ-02)</h3>
+      <p class="g1-muted">El representante acepta el plan por un canal acordado; el principal deja constancia de esa aceptación. Crear un plan no autoriza ejecutar tareas. Cada aceptación cubre únicamente las actividades pendientes incluidas en su propuesta.</p>
+      <div id="planStatus" role="status" aria-live="polite">Selecciona un proyecto para consultar el plan.</div>
+      <div id="planHistory" class="g1-grid"></div>
+      <details id="casePlanPanel" class="case-action-disclosure">
+        <summary><strong>Operaciones del plan</strong><span>Presentar versiones y registrar constancias cuando corresponda</span></summary>
+        <div class="case-action-body">
+      <form id="planProposalForm" class="g1-form g1-hide">
+        <h4>Presentar nueva versión (consultor principal)</h4>
+        <label>Descripción del plan y alcance de implementación<textarea name="contenido" minlength="20" maxlength="12000" rows="4" required></textarea></label>
+        <label>Referencia de presentación a la empresa<input name="referenciaPresentacion" minlength="3" maxlength="250" required></label>
+        <button type="submit">Registrar propuesta</button>
+      </form>
+      <form id="planWithdrawForm" class="g1-form g1-hide">
+        <h4>Retirar propuesta desactualizada (principal)</h4>
+        <p class="g1-muted">No se registra como rechazo de la empresa. La propuesta retirada queda en el historial y puede presentarse una versión corregida.</p>
+        <label>Justificación técnica<textarea name="justificacion" minlength="10" maxlength="4000" required></textarea></label>
+        <button type="submit" class="secondary">Retirar propuesta</button>
+      </form>
+      <form id="planAcceptanceForm" class="g1-form g1-hide">
+        <h4>Registrar aceptación externa (consultor principal)</h4>
+        <p class="g1-muted">Declara solo una aceptación efectivamente recibida del representante; no es una aprobación unilateral.</p>
+        <label>Referencia del acuerdo externo<input name="referenciaAceptacion" minlength="3" maxlength="250" required></label>
+        <label>Constancia y medio de aceptación<textarea name="constanciaAceptacion" minlength="10" maxlength="4000" required rows="3"></textarea></label>
+        <button type="submit">Registrar aceptación</button>
+      </form>
+      <form id="planRegularizationForm" class="g1-form g1-hide" enctype="multipart/form-data">
+        <h4>Regularización histórica excepcional (Q-75)</h4>
+        <p class="g1-muted">Solo tareas antiguas EN_PROGRESO o EN_REVISION detectadas al actualizar el esquema. Requiere un acuerdo real verificable; nunca se presume la aceptación ni se inventa su fecha. El registro se efectúa hoy.</p>
+        <div id="planRegularizationCandidates" role="group" aria-label="Actividades heredadas elegibles"></div>
+        <label>Contenido y alcance del plan histórico realmente aceptado<textarea name="contenido" minlength="20" maxlength="12000" rows="3" required></textarea></label>
+        <label>Fecha y hora de aceptación real (histórica)<input type="datetime-local" name="fechaAceptacionHistorica" required></label>
+        <label>Canal de aceptación histórica<input name="medioAceptacion" minlength="3" maxlength="80" placeholder="Correo, acta firmada, reunión documentada…" required></label>
+        <label>Referencia comprobable del acuerdo<input name="referenciaAceptacion" minlength="3" maxlength="250" required></label>
+        <label>Constancia específica de la aceptación histórica<textarea name="constanciaAceptacion" minlength="20" maxlength="4000" rows="3" required></textarea></label>
+        <label>Justificación de la regularización excepcional<textarea name="justificacion" minlength="20" maxlength="4000" rows="3" required></textarea></label>
+        <label>PDF que respalda la aceptación histórica (máximo 10 MB)<input name="evidencia" type="file" accept="application/pdf,.pdf" required></label>
+        <label class="g1-check"><input name="confirmacionRevision" type="checkbox" value="CONFIRMO_EVIDENCIA_REVISADA" required> Declaro que revisé la evidencia adjunta, que el representante aceptó realmente ese alcance y que la fecha ingresada es la del acuerdo original, no la de hoy.</label>
+        <button type="submit">Registrar regularización documentada</button>
+      </form>
+      <form id="planRejectionForm" class="g1-form g1-hide">
+        <h4>Registrar no aceptación externa (consultor principal)</h4>
+        <label>Motivo comunicado / constancia<textarea name="motivoNoAceptacion" minlength="10" maxlength="4000" required rows="2"></textarea></label>
+        <button type="submit">Registrar rechazo y permitir nueva versión</button>
+      </form>
+        </div>
+      </details>
+    </section>
+    <div id="consultorForms" class="g1-hide">
+      <div class="g1-grid">
+        <details id="caseBreachPanel" class="case-action-disclosure">
+          <summary><strong>Registrar nueva brecha</strong><span>Descripción, criterio verificable y diagnóstico de origen opcional</span></summary>
+          <div class="case-action-body">
+        <form id="brechaForm" class="g1-form">
+          <h3>Registrar brecha</h3>
+          <label>Nombre<input name="titulo" maxlength="180" required /></label>
+          <label>Descripción<textarea name="descripcion" maxlength="8000" required></textarea></label>
+          <label>Criterio verificable<textarea name="criterio" maxlength="3000" required></textarea></label>
+          <label>Diagnóstico de origen (opcional)
+            <select id="breachOriginSelect" name="origenEvaluacionId" aria-describedby="breachOriginHelp"><option value="">Sin diagnóstico de origen documentado</option></select>
+          </label>
+          <p id="breachOriginHelp" class="g1-muted">Relaciona esta brecha con un diagnóstico existente del mismo expediente. El vínculo es explícito, no prueba por sí solo un incumplimiento ni asocia automáticamente preguntas concretas.</p>
+          <button type="submit">Registrar brecha</button>
+        </form>
+          </div>
+        </details>
+        <details id="caseTaskPanel" class="case-action-disclosure">
+          <summary><strong>Crear nueva actividad</strong><span>Datos, asignación y cobertura contractual en tres pasos</span></summary>
+          <div class="case-action-body">
+        <form id="taskForm" class="g1-form task-wizard" novalidate aria-labelledby="taskFormTitle">
+          <div class="task-form-heading">
+            <h3 id="taskFormTitle">Crear actividad</h3>
+            <p class="g1-muted">Tres pasos para definir el trabajo, asignarlo y confirmar su cobertura. La actividad se registra únicamente al finalizar.</p>
+          </div>
+          <ol class="task-wizard-progress" aria-label="Progreso de creación de actividad">
+            <li data-task-progress="0" aria-current="step"><span>1</span> Datos y brechas</li>
+            <li data-task-progress="1"><span>2</span> Responsable y fecha</li>
+            <li data-task-progress="2"><span>3</span> Cobertura y registro</li>
+          </ol>
+          <p id="taskWizardNotice" class="task-wizard-notice" role="status" aria-live="polite">Paso 1 de 3: define la actividad.</p>
+          <fieldset class="task-wizard-step" data-task-step="0">
+            <legend tabindex="-1">1. Datos de la actividad</legend>
+            <label>Título de la actividad<input name="titulo" maxlength="180" required autocomplete="off" /></label>
+            <label>Brechas vinculadas (opcional; selección múltiple)<select name="brechaIds" id="taskBrechaSelect" multiple size="5" aria-describedby="taskBrechaHelp"></select></label>
+            <p id="taskBrechaHelp" class="g1-muted">Puedes crear una actividad sin brecha. Para vincular varias, mantén Ctrl o Cmd al seleccionar.</p>
+          </fieldset>
+          <fieldset class="task-wizard-step" data-task-step="1" hidden>
+            <legend tabindex="-1">2. Asignación y plazo</legend>
+            <label>Tipo de responsable<select name="tipoResponsable"><option value="CLIENTE">Empresa cliente</option><option value="CONSULTORA">Consultora</option></select></label>
+            <label>Persona responsable<select name="asignadoAId" id="taskResponsableSelect" required><option value="">Selecciona el tipo de responsable</option></select></label>
+            <label>Fecha objetivo (opcional)<input type="date" name="fechaObjetivo" /></label>
+          </fieldset>
+          <fieldset class="task-wizard-step" data-task-step="2" hidden>
+            <legend tabindex="-1">3. Cobertura contractual y confirmación</legend>
+            <label>Cobertura del trabajo
+              <select name="cobertura" id="taskCoverage" required><option value="BASE">Dentro del alcance contractual vigente</option><option value="ADICIONAL">Servicio adicional — acuerdo formalizado</option></select>
+            </label>
+            <label id="taskAdditionalRow" class="g1-hide">Acuerdo adicional habilitado<select id="taskAdditionalId" name="acuerdoAdicionalId"><option value="">Primero debe existir acuerdo confirmado y aceptación del alcance</option></select></label>
+            <label id="taskOriginRow" class="g1-hide">Continuidad de actividad anterior (opcional)<select id="taskOriginId" name="actividadOrigenId" aria-describedby="taskOriginHelp"><option value="">Nueva actividad sin antecedente</option></select></label>
+            <p id="taskOriginHelp" class="g1-muted g1-hide">Solo actividades en progreso o revisión cuyo acuerdo fue cancelado o modificado. El vínculo conserva el antecedente, pero no transfiere archivos, estados ni aprobaciones.</p>
+            <p class="g1-muted">La clasificación es una declaración técnica del principal. No sustituye el contrato ni la aceptación del plan.</p>
+            <section class="task-wizard-review" aria-labelledby="taskWizardReviewTitle">
+              <h4 id="taskWizardReviewTitle">Revisa antes de registrar</h4>
+              <dl id="taskWizardSummary" class="task-wizard-summary"></dl>
+              <p class="g1-muted">El servidor validará permisos, reglas contractuales y restricciones de la actividad antes de guardarla.</p>
+            </section>
+          </fieldset>
+          <div class="task-wizard-actions">
+            <button type="button" id="taskStepPrevious" class="secondary" hidden>Volver</button>
+            <button type="button" id="taskStepNext">Continuar</button>
+            <button type="submit" id="taskSubmitButton" hidden>Crear actividad</button>
+          </div>
+        </form>
+          </div>
+        </details>
+      </div>
+    </div>
+    <section class="g1-panel g1-hide" id="additionalSection" aria-label="Servicios adicionales">
+      <h2>Servicios adicionales — Q-65</h2>
+      <p class="g1-muted">Separa la propuesta técnica del consultor principal, la confirmación de ADMIN de un acuerdo externo y la constancia del alcance aceptado por la empresa. No celebra contratos ni procesa pagos.</p>
+      <div id="additionalList" role="status" aria-live="polite">Consultando acuerdos adicionales…</div>
+      <details id="caseAdditionalPanel" class="case-action-disclosure">
+        <summary><strong>Operaciones de servicios adicionales</strong><span>Propuestas, acuerdos y aceptaciones documentadas</span></summary>
+        <div class="case-action-body">
+      <form id="additionalProposalForm" class="g1-form g1-hide">
+        <h3>Proponer trabajo adicional (principal)</h3>
+        <label>Título<input name="titulo" required minlength="3" maxlength="180" /></label>
+        <label>Descripción técnica y alcance<textarea name="descripcion" required minlength="10" maxlength="8000" rows="3"></textarea></label>
+        <button type="submit">Registrar propuesta técnica</button>
+      </form>
+      <form id="additionalConfirmForm" class="g1-form g1-hide">
+        <h3>Constatar acuerdo formalizado externamente (ADMIN)</h3>
+        <label>Propuesta pendiente<select name="acuerdoId" id="additionalToConfirm" required></select></label>
+        <label>Referencia del contrato o anexo<input name="referenciaAcuerdo" required minlength="3" maxlength="250" /></label>
+        <label>Constancia de validación contractual<textarea name="constanciaValidacion" required minlength="10" maxlength="4000" rows="3"></textarea></label>
+        <button type="submit">Confirmar acuerdo externo</button>
+      </form>
+      <form id="additionalChangeForm" class="g1-form g1-hide">
+        <h3>Cancelar o modificar un acuerdo (ADMIN)</h3>
+        <p class="g1-muted">La operacion conserva lo realizado y bloquea nuevas acciones sustentadas en el alcance anterior. La modificación requiere otro acuerdo formalizado y aceptación del nuevo alcance antes de continuar.</p>
+        <label>Acuerdo vigente<select name="acuerdoId" id="additionalToChange" required></select></label>
+        <label>Operación<select name="tipo" required><option value="CANCELACION">Cancelación del servicio adicional</option><option value="MODIFICACION">Modificación formalizada del alcance</option></select></label>
+        <label>Referencia del acuerdo o modificación formalizada<input name="referenciaCambio" required minlength="3" maxlength="250" /></label>
+        <label>Constancia de la modificación o cancelación externa<textarea name="constanciaCambio" required minlength="10" maxlength="4000" rows="3"></textarea></label>
+        <label>Justificación administrativa<textarea name="justificacionCambio" required minlength="10" maxlength="4000" rows="3"></textarea></label>
+        <button type="submit">Registrar cambio y bloquear trabajo pendiente</button>
+      </form>
+      <form id="additionalAcceptanceForm" class="g1-form g1-hide">
+        <h3>Registrar aceptación externa del alcance (principal)</h3>
+        <label>Acuerdo confirmado<select name="acuerdoId" id="additionalToAccept" required></select></label>
+        <label>Referencia de plan o alcance aceptado por el representante<input name="referenciaAceptacion" required minlength="3" maxlength="250" /></label>
+        <label>Constancia de aceptación del representante<textarea name="constanciaAceptacion" required minlength="10" maxlength="4000" rows="3"></textarea></label>
+        <p class="g1-muted">El principal documenta la aceptación externa, no la otorga en nombre de la empresa.</p>
+        <button type="submit">Registrar constancia de aceptación</button>
+      </form>
+        </div>
+      </details>
+    </section>
+    <section class="g1-panel g1-hide" id="retentionSection" aria-label="Conservación contractual">
+      <h2>Condiciones de conservación del contrato</h2>
+      <p class="g1-muted">Registro operativo de lo pactado fuera de la plataforma. No constituye aprobación jurídica, vencimiento automático ni autorización de eliminar expedientes.</p>
+      <div id="retentionCurrent" role="status" aria-live="polite">Consultando condiciones…</div>
+      <div id="retentionClosureStatus" role="status" aria-live="polite" class="g1-muted">Verificando requisito de conservación para el cierre…</div>
+      <section aria-label="Terminación anticipada" id="earlyTerminationSection">
+        <h3>Terminación anticipada por abandono</h3>
+        <div id="earlyTerminationStatus" role="status" aria-live="polite">Consultando estado…</div>
+        <form id="earlyTerminationForm" class="g1-form g1-hide">
+          <label>Justificación del abandono (obligatoria)
+            <textarea name="motivo" rows="4" minlength="20" maxlength="4000" required placeholder="Explica el abandono de la empresa y por qué se finaliza anticipadamente el servicio"></textarea>
+          </label>
+          <label>Referencia documental del abandono (si existe)
+            <input name="referenciaAbandono" minlength="5" maxlength="1000" placeholder="Comunicación, expediente o constancia externa" />
+          </label>
+          <fieldset class="g1-form" aria-label="Constancia de comunicación contractual">
+            <legend>Constancia de comunicación a la empresa — Q-63</legend>
+            <p class="g1-muted">Registra lo que ADMIN efectivamente realizó o intentó por el canal contractual; el aviso interno no sustituye una notificación formal exigible.</p>
+            <label>Resultado
+              <select name="comunicacionResultado" id="earlyCommunicationResult" required>
+                <option value="">Seleccione un resultado</option>
+                <option value="REALIZADA">Comunicación realizada</option>
+                <option value="INTENTADA">Comunicación intentada</option>
+                <option value="NO_APLICA">No aplica — justificar</option>
+              </select>
+            </label>
+            <label id="earlyCommunicationChannelRow">Canal contractual utilizado
+              <input name="comunicacionCanal" minlength="3" maxlength="120" placeholder="Ej.: correo contractual, correspondencia" />
+            </label>
+            <label id="earlyCommunicationReferenceRow">Referencia de soporte (si existe)
+              <input name="comunicacionReferencia" minlength="5" maxlength="1000" placeholder="Radicado, correo o expediente, sin datos innecesarios" />
+            </label>
+            <label>Constancia y hechos verificados / motivo de no aplicación
+              <textarea name="comunicacionDetalle" rows="3" minlength="20" maxlength="3000" required></textarea>
+            </label>
+          </fieldset>
+          <label class="filter-checkbox"><input name="confirmarPendienteConservacion" type="checkbox" />
+            Confirmo que, si falta la conservación contractual, la terminación se registra excepcionalmente y ADMIN debe completar ese registro posteriormente.
+          </label>
+          <p class="g1-muted">Esta operación es irreversible en el flujo ordinario; conserva actividades, brechas, documentos y autores. No es cierre satisfactorio ni dictamen ISO.</p>
+          <button type="submit">Terminar anticipadamente el servicio</button>
+        </form>
+      </section>
+      <details><summary>Historial contractual</summary><div id="retentionHistory" class="g1-grid"></div></details>
+      <form id="retentionForm" class="g1-form g1-hide">
+        <h3>Registrar condiciones formalizadas (ADMIN)</h3>
+        <label>Referencia de acuerdo / anexo<input name="referenciaAcuerdo" maxlength="250" minlength="3" required /></label>
+        <label>Período o criterio temporal pactado<input name="periodoPactado" maxlength="350" required placeholder="Transcribe el período o criterio contractual, sin inventarlo" /></label>
+        <label>Condiciones y categorías comprendidas<textarea name="condiciones" maxlength="12000" minlength="10" rows="4" required></textarea></label>
+        <label>Constancia de validación del contrato<textarea name="constanciaValidacion" maxlength="4000" minlength="10" rows="3" required placeholder="Identifica dónde consta la validación del acuerdo ya formalizado"></textarea></label>
+        <button type="submit">Registrar nueva versión contractual</button>
+      </form>
+    </section>
+    <div class="g1-actions"><button type="button" id="newDiagnosis">Iniciar diagnóstico del proyecto</button></div>
+    <h3 id="brechas">Brechas</h3>
+    <section id="breachWorkspace" class="breach-workspace" aria-labelledby="breachWorkspaceTitle" aria-busy="true">
+      <h4 id="breachWorkspaceTitle">Seguimiento de brechas</h4>
+      <p class="g1-muted">Estado registrado por el servidor y actividades vinculadas vigentes. Los conteos no son una calificación ni sustituyen la revisión de evidencias y verificaciones.</p>
+      <div id="breachMetrics" class="breach-metrics" aria-label="Brechas por estado"></div>
+      <div class="workspace-filter breach-filters" role="search" aria-label="Filtrar brechas">
+        <label for="breachSearch">Buscar brecha<input id="breachSearch" type="search" autocomplete="off" placeholder="Nombre, criterio o identificador" /></label>
+        <label for="breachFilter">Estado<select id="breachFilter"><option value="TODAS">Todos los estados</option><option value="ABIERTA">Abierta</option><option value="EN_TRATAMIENTO">En tratamiento</option><option value="PROPUESTA_CIERRE">Cierre propuesto</option><option value="CERRADA">Cerrada</option></select></label>
+        <label for="breachOriginFilter">Origen declarado<select id="breachOriginFilter"><option value="TODAS">Todos los diagnósticos</option><option value="SIN_ORIGEN">Sin diagnóstico vinculado</option></select></label>
+        <label class="filter-checkbox"><input id="breachFollowup" type="checkbox" /> Con actividades por atender o sin vínculo vigente</label>
+        <button id="clearBreachFilters" type="button" class="secondary">Restablecer filtros</button>
+      </div>
+      <p id="breachSummary" class="g1-muted" role="status" aria-live="polite">Cargando brechas…</p>
+    </section>
+    <div id="breaches" class="g1-grid"></div>
+    <h3 id="actividades">Actividades</h3>
+    <div class="workspace-filter" role="search" aria-label="Filtrar actividades del proyecto">
+      <label for="taskSearch">Buscar actividad<input id="taskSearch" type="search" autocomplete="off" placeholder="Título, brecha o responsable" /></label>
+      <label for="taskFilter">Estado<select id="taskFilter"><option value="TODAS">Todos los estados</option><option value="PENDIENTE">Pendiente</option><option value="EN_PROGRESO">En progreso</option><option value="EN_REVISION">En revisión</option><option value="COMPLETADA">Completada</option><option value="CANCELADA">Cancelada</option></select></label>
+      <label class="filter-checkbox"><input id="myTasks" type="checkbox" /> Solo mis actividades</label>
+      <label for="taskSort">Ordenar por<select id="taskSort"><option value="FECHA">Fecha objetivo más próxima</option><option value="ESTADO">Estado de actividad</option><option value="TITULO">Título (A–Z)</option><option value="ID">Identificador</option></select></label>
+      <button id="clearTaskFilters" class="secondary" type="button">Restablecer filtros</button>
+    </div>
+    <p id="tasksSummary" class="g1-muted" role="status" aria-live="polite"></p>
+    <div id="tasks" class="g1-grid"></div>
+    <h3 id="diagnosticos">Diagnósticos vinculados</h3><div id="diagnoses" class="g1-grid"></div>
+    <section id="diagnosisDetail" class="g1-panel diagnosis-workspace g1-hide" aria-labelledby="diagnosisTitle" aria-busy="false">
+      <div class="diagnosis-heading"><div><h3 id="diagnosisTitle" tabindex="-1">Respuestas del diagnóstico</h3>
+        <p class="g1-muted">Las valoraciones son autodeclaradas. Las observaciones del consultor y las brechas son registros independientes; ninguna respuesta determina cumplimiento automáticamente.</p></div>
+        <button type="button" id="diagnosisClose" class="secondary">Cerrar detalle</button></div>
+      <div id="diagnosisMetrics" class="diagnosis-metrics" aria-label="Resumen de respuestas registradas"></div>
+      <div class="workspace-filter diagnosis-filters" role="search" aria-label="Buscar respuestas del diagnóstico">
+        <label for="diagnosisSearch">Buscar pregunta u observación<input id="diagnosisSearch" type="search" placeholder="Pregunta, autor u observación" autocomplete="off" /></label>
+        <label for="diagnosisFilter">Mostrar<select id="diagnosisFilter"><option value="TODAS">Todas las respuestas</option><option value="CON_OBSERVACION">Con observación del consultor</option><option value="SIN_OBSERVACION">Sin observación del consultor</option></select></label>
+        <button type="button" id="clearDiagnosisFilters" class="secondary">Restablecer filtros</button>
+      </div>
+      <p id="diagnosisSummary" class="g1-muted" role="status" aria-live="polite"></p>
+      <div class="diagnosis-related" id="diagnosisRelated" aria-label="Brechas documentadas del diagnóstico"></div>
+      <div id="diagnosisAnswers" class="diagnosis-answers"></div>
+      <div class="diagnosis-actions"><button id="saveReview" class="g1-hide" type="button">Guardar revisión del consultor</button></div>
+    </section>
+    <section class="g1-panel" id="g2Area" aria-label="Evidencias y preparación">
+      <h2>Entregables, evidencias e informes</h2>
+      <p class="g1-muted">Dos comprobaciones independientes: aceptación documental y verificación de implementación. Ninguna equivale a certificación oficial.</p>
+      <div id="g2Status" class="g1-alert g1-hide" role="status" aria-live="polite"></div>
+      <details id="g2Operations" class="document-operations g1-hide">
+        <summary>Gestiones documentales y verificaciones operativas</summary>
+        <p class="g1-muted">Define entregables, registra verificaciones y, según tu asignación, gestiona cierres e informes. Estas operaciones son independientes de las revisiones de PDF.</p>
+      <div class="g1-grid">
+        <form id="g2CrearEntregable" class="g1-form g1-hide">
+          <h3>Definir entregable</h3>
+          <label>Actividad del proyecto<select name="actividadId" required><option value="">Selecciona actividad</option></select></label>
+          <label>Nombre del entregable<input name="titulo" maxlength="180" required/></label>
+          <label>Criterio de aceptación<textarea name="criterio" maxlength="4000" required rows="3"></textarea></label>
+          <button>Crear entregable</button>
+        </form>
+        <form id="g2Verificacion" class="g1-form g1-hide">
+          <h3>Registrar verificación operativa</h3>
+          <label>Actividad en revisión<select name="actividadId" required><option value="">Selecciona actividad</option></select></label>
+          <label>Resultado<select name="resultado"><option value="VERIFICADA">Verificada</option><option value="NO_VERIFICADA">No verificada</option><option value="NO_APLICA">No aplica, justificado</option></select></label>
+          <p id="g2VerificationGuide" class="task-wizard-notice" role="status" aria-live="polite">Selecciona una actividad en revisión. Esta verificación es independiente de la aceptación documental.</p>
+          <section class="verification-context" aria-labelledby="g2VerificationContextHeading">
+            <h4 id="g2VerificationContextHeading">Contexto antes de registrar</h4>
+            <p id="g2VerificationActivityContext" class="g1-muted">Selecciona una actividad en revisión para consultar sus verificaciones previas.</p>
+            <div id="g2VerificationHistory" class="verification-history" role="status" aria-live="polite" aria-busy="false">
+              <p class="g1-muted">Selecciona una actividad para consultar antecedentes.</p>
+            </div>
+          </section>
+          <label>Método utilizado<input name="metodo" maxlength="180" required/></label>
+          <label>Evidencia observada<textarea name="evidencia" rows="2" maxlength="5000"></textarea></label>
+          <label>Justificación<textarea name="justificacion" rows="2" maxlength="4000" required></textarea></label>
+          <button>Registrar verificación</button>
+        </form>
+        <form id="g2CerrarBrecha" class="g1-form g1-hide">
+          <h3>Cerrar brecha verificada</h3>
+          <label>Brecha propuesta para cierre<select name="brechaId" required><option value="">Selecciona brecha</option></select></label>
+          <label>Justificación profesional<textarea name="justificacion" maxlength="4000" required></textarea></label>
+          <label>Confirmación de cobertura (Q-71/Q-72/Q-73, obligatoria ante ramificaciones o exclusiones)<textarea name="justificacionCoberturaRamificada" rows="3" maxlength="4000" placeholder="Explica cómo el conjunto de sucesoras completadas cubre el alcance y las verificaciones de la brecha."></textarea></label>
+          <p class="g1-muted">Las actividades canceladas o retiradas no demuestran cumplimiento. El servidor comprueba las ramas vigentes y exige confirmar expresamente el alcance restante.</p>
+          <button>Cerrar brecha</button>
+        </form>
+        <form id="g2PublicarInforme" class="g1-form g1-hide">
+          <h3>Publicar informe interno de seguimiento</h3>
+          <p class="g1-muted">El cuestionario y los criterios SGSI no han sido validados por especialistas. Este informe no declara preparación para certificación.</p>
+          <label id="g2ReportReplacementRow" class="g1-hide">Informe afectado que sustituye
+            <select name="sustituyeInformeId" id="g2ReportReplacement"></select>
+          </label>
+          <label>Resumen profesional<textarea name="resumen" maxlength="10000" required rows="3"></textarea></label>
+          <label>Recomendaciones<textarea name="recomendaciones" maxlength="10000" required rows="3"></textarea></label>
+          <button>Publicar informe interno</button>
+        </form>
+      </div>
+      </details>
+      <section class="document-workspace" aria-labelledby="g2DeliveriesHeading">
+        <div class="document-workspace-heading">
+          <div><h3 id="g2DeliveriesHeading">Entregables documentales</h3>
+            <p class="g1-muted">Localiza versiones sin presentar, pendientes y con correcciones. La aceptación del PDF no verifica la implementación.</p></div>
+          <span id="g2DocumentLoading" class="g1-muted" role="status" aria-live="polite">Cargando documentos…</span>
+        </div>
+        <div class="document-metrics" role="group" aria-label="Filtrar entregables por estado documental">
+          <button type="button" data-doc-state="TODAS" aria-pressed="true"><span>Todos</span><strong data-doc-count="TODAS">—</strong></button>
+          <button type="button" data-doc-state="CORRECCION_REQUERIDA" aria-pressed="false"><span>Requieren corrección</span><strong data-doc-count="CORRECCION_REQUERIDA">—</strong></button>
+          <button type="button" data-doc-state="PENDIENTE" aria-pressed="false"><span>Pendientes de revisión</span><strong data-doc-count="PENDIENTE">—</strong></button>
+          <button type="button" data-doc-state="SIN_VERSION" aria-pressed="false"><span>Sin versión</span><strong data-doc-count="SIN_VERSION">—</strong></button>
+          <button type="button" data-doc-state="ACEPTADA" aria-pressed="false"><span>Aceptados</span><strong data-doc-count="ACEPTADA">—</strong></button>
+          <button type="button" data-doc-state="OTROS" aria-pressed="false"><span>Otros estados</span><strong data-doc-count="OTROS">—</strong></button>
+        </div>
+        <div class="workspace-filter" role="search" aria-label="Buscar y ordenar entregables">
+          <label for="g2DocumentSearch">Buscar entregable, criterio o actividad
+            <input type="search" id="g2DocumentSearch" autocomplete="off" placeholder="Título, criterio o identificador" />
+          </label>
+          <label for="g2DocumentOrder">Ordenar por
+            <select id="g2DocumentOrder"><option value="prioridad">Atención documental primero</option><option value="titulo">Título A–Z</option><option value="actividad">Actividad</option></select>
+          </label>
+          <label id="g2MyCorrectionsRow" class="document-owned-filter" hidden>
+            <input id="g2MyCorrections" type="checkbox" /> Solo correcciones que puedo presentar <span id="g2MyCorrectionsCount">(0)</span>
+          </label>
+          <button type="button" id="g2ClearDocumentFilters" class="secondary">Restablecer filtros</button>
+        </div>
+        <p id="g2DocumentSummary" class="g1-muted" role="status" aria-live="polite">Consultando entregables…</p>
+        <div id="g2Entregables" class="g1-grid" aria-busy="false"></div>
+        <p id="g2DocumentEmpty" class="empty-list" hidden>No hay entregables que coincidan con estos filtros.</p>
+      </section>
+      <h3>Informes publicados</h3>
+      <div id="g2Informes" class="g1-grid"></div>
+    </section>
+    <section class="g1-panel g1-hide" id="g3Area" aria-label="Análisis asistido por inteligencia artificial">
+      <h2>Revisión documental con IA local</h2>
+      <p class="g1-muted">El representante autoriza una versión específica; el consultor define criterios verificables. Ollama ofrece sugerencias con citas comprobables. No certifica, ni aprueba por sí mismo.</p>
+      <div id="g3Msg" role="status" aria-live="polite" class="g1-alert g1-hide"></div>
+      <div id="g3Docs" class="g1-grid"></div>
+    </section>
+  </section>
+  <dialog id="dateChangeDialog" class="workspace-dialog" aria-labelledby="dateChangeTitle">
+    <form id="dateChangeForm" class="g1-form">
+      <h2 id="dateChangeTitle">Modificar fecha objetivo</h2>
+      <p id="dateChangeContext" class="g1-muted"></p>
+      <label for="dateChangeNew">Nueva fecha objetivo<input type="date" id="dateChangeNew" required /></label>
+      <label for="dateChangeReason">Justificación del cambio<textarea id="dateChangeReason" maxlength="4000" required rows="3" placeholder="Explica por qué es necesario cambiar el plazo"></textarea></label>
+      <p class="g1-muted">El representante recibirá una notificación interna persistente. No se requiere que acepte la nueva fecha.</p>
+      <div class="g1-actions"><button type="button" class="secondary" id="dateChangeCancel">Cancelar</button><button type="submit">Guardar y notificar</button></div>
+    </form>
+  </dialog>
+  <dialog id="teamAddDialog" class="workspace-dialog" aria-labelledby="teamAddTitle">
+    <form id="teamAddForm" class="g1-form">
+      <h2 id="teamAddTitle">Incorporar colaborador</h2>
+      <p id="teamAddContext" class="g1-muted"></p>
+      <label for="teamAddUser">Consultor disponible
+        <select id="teamAddUser" required><option value="">Cargando consultores…</option></select>
+      </label>
+      <p class="g1-muted">El consultor principal solo puede incorporar colaboradores a este proyecto. Designar o sustituir al principal corresponde a ADMIN.</p>
+      <div class="g1-actions"><button type="button" class="secondary" id="teamAddCancel">Cancelar</button><button type="submit">Incorporar al proyecto</button></div>
+    </form>
+  </dialog>
+  <dialog id="teamRemovalDialog" class="workspace-dialog" aria-labelledby="teamRemovalTitle">
+    <form id="teamRemovalForm" class="g1-form">
+      <h2 id="teamRemovalTitle">Retirar consultor del proyecto</h2>
+      <p id="teamRemovalContext" class="g1-muted"></p>
+      <p id="teamRemovalPending" class="inline-alert" role="status"></p>
+      <p class="g1-muted">El acceso al expediente se revoca, pero las actividades, documentos, revisiones y autorías anteriores permanecen. El principal debe reasignar las actividades pendientes para continuarlas.</p>
+      <div class="g1-actions"><button id="teamRemovalCancel" type="button" class="secondary">Cancelar</button><button type="submit">Confirmar retiro</button></div>
+    </form>
+  </dialog>
+  <dialog id="activityReassignDialog" class="workspace-dialog" aria-labelledby="activityReassignTitle">
+    <form id="activityReassignForm" class="g1-form">
+      <h2 id="activityReassignTitle">Reasignar actividad</h2>
+      <p id="activityReassignContext" class="g1-muted"></p>
+      <label>Consultor nuevo del proyecto<select id="activityReassignUser" required><option value="">Selecciona un consultor</option></select></label>
+      <label>Justificación de la reasignación<textarea id="activityReassignReason" minlength="10" maxlength="4000" rows="4" required placeholder="Explica por qué es necesario designar un nuevo encargado"></textarea></label>
+      <p class="g1-muted">Se conserva el estado de la actividad y la autoría histórica. Esta acción no aprueba entregables ni transfiere sus revisiones.</p>
+      <div class="g1-actions"><button id="activityReassignCancel" type="button" class="secondary">Cancelar</button><button type="submit">Guardar reasignación</button></div>
+    </form>
+  </dialog>
+  <dialog id="activityAnnulDialog" class="workspace-dialog" aria-labelledby="activityAnnulTitle">
+    <form id="activityAnnulForm" class="g1-form">
+      <h2 id="activityAnnulTitle">Anular actividad antecedente</h2>
+      <p id="activityAnnulContext" class="g1-muted"></p>
+      <label for="activityAnnulSuccessor">Actividad sucesora vinculada
+        <select id="activityAnnulSuccessor" required><option value="">Selecciona una sucesora</option></select>
+      </label>
+      <label for="activityAnnulReason">Justificación de la anulación
+        <textarea id="activityAnnulReason" minlength="10" maxlength="4000" rows="4" required placeholder="Explica por qué el trabajo continúa bajo otro acuerdo"></textarea>
+      </label>
+      <p class="g1-muted">La anulación NO representa cumplimiento. Se conservan documentos, evidencias, revisiones y el estado independiente de la sucesora.</p>
+      <div class="g1-actions"><button id="activityAnnulCancel" type="button" class="secondary">Cancelar</button><button type="submit">Confirmar anulación</button></div>
+    </form>
+  </dialog>
+  <dialog id="branchRetireDialog" class="workspace-dialog" aria-labelledby="branchRetireTitle">
+    <form id="branchRetireForm" class="g1-form">
+      <h2 id="branchRetireTitle">Retirar rama del alcance — Q-72</h2>
+      <p id="branchRetireContext" class="g1-muted"></p>
+      <label for="branchRetireBreach">Brecha de la ramificación
+        <select id="branchRetireBreach" required></select>
+      </label>
+      <label for="branchRetireAgreement">Nuevo acuerdo con alcance aceptado
+        <select id="branchRetireAgreement" required></select>
+      </label>
+      <label for="branchRetireReason">Justificación de exclusión del trabajo
+        <textarea id="branchRetireReason" minlength="10" maxlength="4000" rows="4" required placeholder="Describe el cambio formal del alcance y por qué esta rama ya no es necesaria"></textarea>
+      </label>
+      <p class="g1-muted">Solo se retira una actividad terminal vinculada a una única brecha. Se exige acuerdo nuevo HABILITADO y aceptación externa registrada. No elimina evidencias ni demuestra cumplimiento: las demás ramas deberán verificarse y el principal justificará el cierre.</p>
+      <div class="g1-actions"><button id="branchRetireCancel" type="button" class="secondary">Cancelar</button><button type="submit">Registrar retiro de rama</button></div>
+    </form>
+  </dialog>
+  <dialog id="linkExclusionDialog" class="workspace-dialog" aria-labelledby="linkExclusionTitle">
+    <form id="linkExclusionForm" class="g1-form">
+      <h2 id="linkExclusionTitle">Excluir vínculo actividad–brecha — Q-73</h2>
+      <p id="linkExclusionContext" class="g1-muted"></p>
+      <label for="linkExclusionBreach">Brecha de la cual se excluye el vínculo
+        <select id="linkExclusionBreach" required></select>
+      </label>
+      <label for="linkExclusionAgreement">Acuerdo nuevo formalizado y aceptado por la empresa
+        <select id="linkExclusionAgreement" required></select>
+      </label>
+      <label for="linkExclusionReason">Justificación específica de la exclusión
+        <textarea id="linkExclusionReason" minlength="10" maxlength="4000" rows="4" required placeholder="Explica por qué el trabajo ya no es necesario para esta brecha, según el alcance aceptado"></textarea>
+      </label>
+      <p class="g1-muted">El vínculo se conserva como histórico y excluido para esa brecha. La actividad y las demás brechas no se cancelan ni se consideran cumplidas por este cambio.</p>
+      <div class="g1-actions"><button id="linkExclusionCancel" type="button" class="secondary">Cancelar</button><button type="submit">Registrar exclusión</button></div>
+    </form>
+  </dialog>
+  <dialog id="completedScopeDialog" class="workspace-dialog" aria-labelledby="completedScopeTitle">
+    <form id="completedScopeForm" class="g1-form">
+      <h2 id="completedScopeTitle">Documentar alcance posterior — Q-74</h2>
+      <p id="completedScopeContext" class="g1-muted"></p>
+      <label for="completedScopeBreach">Brecha cuyo alcance fue modificado
+        <select id="completedScopeBreach" required></select>
+      </label>
+      <label for="completedScopeAgreement">Nuevo acuerdo formalizado y aceptado
+        <select id="completedScopeAgreement" required></select>
+      </label>
+      <label for="completedScopeImpact">Efecto del cambio sobre la evaluación actual de la brecha
+        <textarea id="completedScopeImpact" minlength="10" maxlength="4000" rows="4" required placeholder="Documenta el nuevo alcance sin desconocer el trabajo realizado ni sus aprobaciones"></textarea>
+      </label>
+      <p class="g1-muted">Esta es solo una constancia histórica. No excluye la relación actividad–brecha, no revoca evidencias ni cambia una brecha cerrada. La reapertura por correcciones sigue SOL-34.</p>
+      <div class="g1-actions"><button id="completedScopeCancel" type="button" class="secondary">Cancelar</button><button type="submit">Registrar constancia</button></div>
+    </form>
+  </dialog>
+  <!-- Consulta local de PDF mediante la API autenticada; no se persisten documentos en el frontend. -->
+  <dialog id="g2PdfPreviewDialog" class="workspace-dialog pdf-preview-dialog" aria-labelledby="g2PdfPreviewTitle" aria-describedby="g2PdfPreviewStatus">
+    <div class="pdf-preview-heading">
+      <div>
+        <h2 id="g2PdfPreviewTitle">Consulta de documento</h2>
+        <p class="g1-muted">La consulta no implica aprobación ni verificación de la implementación.</p>
+      </div>
+      <button id="g2PdfPreviewClose" type="button" class="secondary">Cerrar</button>
+    </div>
+    <p id="g2PdfPreviewStatus" role="status" aria-live="polite">Preparando documento…</p>
+    <iframe id="g2PdfPreviewFrame" title="Vista previa del documento PDF" hidden></iframe>
+    <div class="pdf-preview-actions">
+      <p class="g1-muted">Si tu navegador no muestra el archivo, puedes descargarlo para consultarlo.</p>
+      <button type="button" id="g2PdfPreviewDownload" class="secondary">Descargar PDF</button>
+    </div>
+  </dialog>
+  <dialog id="reportAffectedDialog" class="workspace-dialog" aria-labelledby="reportAffectedTitle">
+    <form id="reportAffectedForm" class="g1-form">
+      <h2 id="reportAffectedTitle">Informe afectado por una corrección — SOL-35</h2>
+      <p id="reportAffectedContext" class="g1-muted"></p>
+      <label>Brecha cuyo cambio afecta conclusiones<select id="reportAffectedBreach" required></select></label>
+      <label>Justificación profesional<textarea id="reportAffectedReason" minlength="10" maxlength="4000" rows="4" required></textarea></label>
+      <p class="g1-muted">El informe original no se elimina ni modifica. Quedará marcado como afectado hasta publicar un informe sustituto, sin emitir una conclusión favorable automática.</p>
+      <div class="g1-actions"><button id="reportAffectedCancel" type="button" class="secondary">Cancelar</button><button type="submit">Registrar afectación</button></div>
+    </form>
+  </dialog>
+  <dialog id="breachReopenDialog" class="workspace-dialog" aria-labelledby="breachReopenTitle">
+    <form id="breachReopenForm" class="g1-form">
+      <h2 id="breachReopenTitle">Reabrir brecha cerrada — SOL-34</h2>
+      <p id="breachReopenContext" class="g1-muted"></p>
+      <label for="breachReopenOriginal">Actividad completada cuya corrección se necesita
+        <select id="breachReopenOriginal" required></select>
+      </label>
+      <label for="breachReopenReason">Por qué el cierre anterior ya no acredita la resolución
+        <textarea id="breachReopenReason" minlength="10" maxlength="4000" required rows="3"></textarea>
+      </label>
+      <label for="breachReopenCorrection">Corrección que debe verificarse nuevamente
+        <textarea id="breachReopenCorrection" minlength="10" maxlength="4000" required rows="3"></textarea>
+      </label>
+      <label for="breachReopenTitleActivity">Título de la nueva actividad correctiva
+        <input id="breachReopenTitleActivity" maxlength="180" required />
+      </label>
+      <label for="breachReopenAgreement" id="breachReopenAgreementRow" class="g1-hide">Acuerdo adicional formalizado y aceptado
+        <select id="breachReopenAgreement"></select>
+      </label>
+      <label for="breachReopenResponsible">Responsable actual del proyecto
+        <select id="breachReopenResponsible" required></select>
+      </label>
+      <p class="g1-muted">Se crea una nueva actividad pendiente, bajo cobertura BASE o un acuerdo adicional ya habilitado según el antecedente. El cierre y las aprobaciones originales permanecen en el historial; no se transfieren.</p>
+      <div class="g1-actions"><button type="button" class="secondary" id="breachReopenCancel">Cancelar</button><button type="submit">Reabrir y crear corrección</button></div>
+    </form>
+  </dialog>
+  <dialog id="breachClosureDialog" class="workspace-dialog" aria-labelledby="breachClosureTitle">
+    <form id="breachClosureForm" class="g1-form">
+      <h2 id="breachClosureTitle">Proponer cierre de brecha</h2>
+      <p id="breachClosureContext" class="g1-muted"></p>
+      <p class="g1-muted">La propuesta no cierra la brecha; requiere verificaciones documentales y operativas, y posterior cierre formal.</p>
+      <label for="breachClosureReason">Justificación profesional<textarea id="breachClosureReason" name="justificacion" maxlength="4000" required rows="4" minlength="1" placeholder="Explica las evidencias que sustentan la propuesta"></textarea></label>
+      <div class="g1-actions"><button type="button" class="secondary" id="breachClosureCancel">Cancelar</button><button type="submit">Enviar propuesta</button></div>
+    </form>
+  </dialog>
+</main>
+<script src="../js/deployment.js"></script><script src="../js/core.js"></script><script src="../js/workspace-model.js"></script><script src="../js/shell.js"></script><script src="../js/operation-ui.js"></script><script src="../js/document-review-ui.js"></script><script src="../js/document-followup-ui.js"></script><script src="../js/verification-ui.js"></script><script src="../js/g2-documentos.js"></script>
+<script src="../js/g3-ia.js"></script>
+<script src="../js/conservacion.js"></script>
+<script src="../js/activities-ui.js"></script><script src="../js/case-workspace-ui.js"></script><script src="../js/task-form-ui.js"></script><script src="../js/attention-ui.js"></script><script src="../js/breach-ui.js"></script><script src="../js/diagnosis-ui.js"></script><script src="../js/registro-ui.js"></script><script src="../js/proyectos.js"></script>
+<script src="../js/case-stages.js"></script>
+<script src="../js/project-onboarding.js"></script>
+</body>
+</html>

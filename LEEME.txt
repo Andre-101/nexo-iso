@@ -1,0 +1,15 @@
+Parche NEXO local - acceso a localhost:8080
+
+Problema: el contenedor web solo estaba unido a una red Docker internal: true.
+Correccion: se agrega red local_access, bridge normal, SOLO a web.
+Se mantiene la publicacion en 127.0.0.1:8080 y la red interna app.
+
+Aplicar desde NEXO (PowerShell):
+Expand-Archive -Path "$env:USERPROFILE\Downloads\NEXO_PARCHE_RED_LOCAL_8080_20261105.zip" -DestinationPath . -Force
+docker compose --env-file .env.local -f compose.local.yaml config --quiet
+docker compose --env-file .env.local -f compose.local.yaml up -d --no-deps --force-recreate --wait web
+docker compose --env-file .env.local -f compose.local.yaml ps
+docker port nexo_local-web-1 8080/tcp
+curl.exe -v http://127.0.0.1:8080/healthz
+
+No usar docker compose down -v. No reconstruir imagen.

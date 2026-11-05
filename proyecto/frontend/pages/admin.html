@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#101b31" />
+  <link rel="manifest" href="../manifest.webmanifest" />
+  <link rel="icon" href="../icon.svg" type="image/svg+xml" />
+  <title>Administración · NEXO</title>
+  <link rel="stylesheet" href="../styles.css" />
+</head>
+<body data-protected>
+  <main class="dashboard-layout role-workspace" data-workspace="ADMIN">
+    <header class="page-heading workspace-heading">
+      <div><span class="eyebrow">ESPACIO DE TRABAJO · ADMINISTRACIÓN</span>
+        <h1>Administración del servicio</h1>
+        <p class="muted">Administra el acceso al servicio. Primero habilita cuentas y verifica empresas; después crea el expediente y designa al consultor principal. Los diagnósticos y las revisiones técnicas no son tareas ordinarias de ADMIN.</p></div>
+      <a href="./proyectos.html" class="button-link">Ver proyectos</a>
+    </header>
+
+    <section class="admin-journey" aria-labelledby="adminJourneyTitle"><span class="eyebrow">ORDEN OPERATIVO</span><h2 id="adminJourneyTitle">Preparar un proyecto sin mezclar responsabilidades</h2><ol><li><strong>1. Crear o revisar cuentas</strong><span>ADMIN habilita identidades, sin registrar automáticamente su representación.</span></li><li><strong>2. Vincular empresa y representante</strong><span>Verifica NIT y facultades vigentes antes de abrir el expediente.</span></li><li><strong>3. Abrir proyecto y designar principal</strong><span>El servicio y el alcance deben corresponder a un acuerdo válido.</span></li></ol><p>Las respuestas del cliente y la revisión técnica continúan en sus espacios correspondientes.</p></section>
+    <nav class="admin-workflow-nav" aria-label="Tareas administrativas"><a href="#cuentas">01 · Cuentas</a><a href="#empresasAdmin">02 · Empresas</a><a href="./proyectos.html#adminArea">03 · Abrir proyectos</a><a href="#alertasAdmin">04 · Avisos registrales</a></nav>
+    <section class="g1-panel admin-section" id="cuentas">
+      <div class="row-between">
+        <h2>Usuarios y accesos</h2>
+      </div>
+
+      <form id="adminCreateUserForm" class="form admin-user-form">
+        <h3 class="full">Crear cuenta de acceso</h3>
+        <label>Nombre completo<input name="nombre" autocomplete="name" placeholder="Nombre y apellido" required maxlength="160" /></label>
+        <label>Correo electrónico<input name="email" type="email" autocomplete="email" placeholder="nombre@empresa.com" required /></label>
+        <label>Contraseña inicial<input name="password" type="password" autocomplete="new-password" minlength="12" placeholder="Mínimo 12 caracteres" required /></label>
+        <label>Rol de acceso<select name="rol" required>
+          <option value="EMPRESARIO">Empresa cliente</option><option value="EVALUADOR">Consultor</option><option value="ADMIN">Administración</option>
+        </select></label>
+        <button type="submit">Crear usuario</button>
+      </form>
+
+      <div class="collection-tools" role="search" aria-label="Buscar cuentas">
+        <label for="filterUsers">Buscar usuario
+          <input id="filterUsers" type="search" placeholder="Nombre o correo" autocomplete="off" />
+        </label>
+        <label for="filterUserStatus">Estado de acceso
+          <select id="filterUserStatus"><option value="TODOS">Todos</option><option value="ACTIVOS">Activos</option><option value="INACTIVOS">Inactivos</option><option value="URGENTES">Bloqueo urgente</option></select>
+        </label>
+        <button type="button" id="refreshUsers" class="secondary">Actualizar usuarios</button>
+      </div>
+      <p id="usersSummary" role="status" aria-live="polite" class="muted"></p>
+      <div id="usersContainer" class="list" aria-busy="false"></div>
+      <dialog id="accountActionDialog" class="action-dialog" aria-labelledby="accountActionTitle" aria-describedby="accountActionDescription">
+        <form id="accountActionForm" class="form">
+          <h3 id="accountActionTitle">Administrar cuenta</h3>
+          <p id="accountActionDescription" class="muted"></p>
+          <p id="accountActionError" class="inline-alert error hidden" role="alert"></p>
+          <label id="accountActionRoleField">Rol de acceso
+            <select id="accountActionRole" required><option value="ADMIN">Administración</option><option value="EMPRESARIO">Empresa cliente</option><option value="EVALUADOR">Consultor</option></select>
+          </label>
+          <label id="accountActionReasonField">Justificación del bloqueo urgente
+            <textarea id="accountActionReason" rows="4" minlength="10" maxlength="2000" required placeholder="Describe el riesgo que exige suspender el acceso"></textarea>
+          </label>
+          <div class="dialog-actions">
+            <button type="button" id="accountActionCancel" class="secondary">Cancelar</button>
+            <button type="submit" id="accountActionSubmit">Confirmar</button>
+          </div>
+        </form>
+      </dialog>
+      <dialog id="reactivacionDialog" aria-labelledby="reactivacionTitulo" class="card">
+        <form id="reactivacionForm" class="form">
+          <h3 id="reactivacionTitulo">Revisión de accesos antes de reactivar</h3>
+          <p id="reactivacionIdentidad" class="muted"></p>
+          <p>Comprueba que el motivo del bloqueo está resuelto y que las relaciones indicadas siguen autorizadas. Si necesitas cambiar alguna, cancela y utiliza primero el flujo de designación o retiro correspondiente.</p>
+          <div id="reactivacionRelaciones" class="list" aria-live="polite"></div>
+          <label>Motivo de resolución y justificación de reactivación
+            <textarea id="reactivacionMotivo" rows="3" minlength="10" maxlength="2000" required placeholder="Explica por qué se puede restablecer el acceso"></textarea>
+          </label>
+          <label><input type="checkbox" id="reactivacionConfirmacion" required /> He revisado expresamente todos los vínculos vigentes. Entiendo que no se recuperan permisos retirados ni tareas reasignadas.</label>
+          <div class="list-actions">
+            <button type="button" id="cancelarReactivacion" class="ghost">Cancelar</button>
+            <button type="submit">Confirmar y reactivar</button>
+          </div>
+        </form>
+      </dialog>
+    </section>
+
+    <section class="g1-panel admin-section" id="empresasAdmin">
+      <div class="row-between">
+        <h2>Empresas</h2>
+        <button id="refreshEmpresas">Actualizar empresas</button>
+      </div>
+      <p class="muted">Consulta la procedencia registral y gestiona la representación vigente. Los datos de la fuente no se editan ni requieren aprobación independiente.</p>
+      <div class="collection-tools" role="search" aria-label="Buscar empresas">
+        <label for="filterCompanies">Buscar empresa
+          <input id="filterCompanies" type="search" placeholder="Razón social o NIT" autocomplete="off" />
+        </label>
+        <label for="filterCompanyStatus">Origen de los datos
+          <select id="filterCompanyStatus"><option value="TODOS">Todos</option><option value="FUENTE">Fuente</option><option value="ADMIN_PROVISIONAL">Provisional ADMIN</option><option value="ADMIN_CONCILIADO">Conciliado ADMIN</option><option value="LEGADO">Legado</option></select>
+        </label>
+      </div>
+      <p id="companiesSummary" role="status" aria-live="polite" class="muted"></p>
+      <div id="empresasContainer" class="list" aria-busy="false"></div>
+      <dialog id="representanteDialog" class="action-dialog" aria-labelledby="representanteDialogTitulo">
+        <form id="representanteForm" class="form">
+          <h3 id="representanteDialogTitulo">Sustituir representante</h3>
+          <p id="representanteActual" class="muted"></p>
+          <p>Solo ADMIN puede efectuar este cambio. El representante anterior perderá acceso, se conservarán sus aportes históricos y el nuevo recibirá copias de los avisos pendientes.</p>
+          <label>Nuevo representante activo
+            <select id="representanteNuevo" required></select>
+          </label>
+          <label>Motivo de sustitución
+            <textarea id="representanteMotivo" minlength="10" maxlength="2000" rows="3" required></textarea>
+          </label>
+          <label>Constancia de validación de representación legal o delegación
+            <textarea id="representanteConstancia" minlength="10" maxlength="2000" rows="3" required placeholder="Explica qué se verificó y cómo, sin introducir datos personales innecesarios"></textarea>
+          </label>
+          <label><input type="checkbox" id="representanteVerificado" required /> Confirmo que ADMIN verificó la facultad de representación y que la sustitución está autorizada.</label>
+          <p id="representanteError" class="inline-alert error hidden" role="alert"></p>
+          <div class="dialog-actions">
+            <button type="button" id="representanteCancelar" class="secondary">Cancelar</button>
+            <button type="submit" id="representanteGuardar">Confirmar sustitución</button>
+          </div>
+        </form>
+      </dialog>
+      <dialog id="conciliacionDialog" class="action-dialog" aria-labelledby="conciliacionTitulo">
+        <form id="conciliacionForm" class="form">
+          <h3 id="conciliacionTitulo">Conciliar información registral</h3>
+          <p class="muted">Esta decisión afecta únicamente al valor utilizado operativamente. Los datos originales de la fuente y el historial permanecerán intactos.</p>
+          <div id="conciliacionComparacion" class="list" aria-live="polite"></div>
+          <label>Dato operativo a conservar
+            <select id="conciliacionEleccion" required><option value="FUENTE">Información de la fuente</option><option value="ADMIN">Información sustentada por ADMIN</option></select>
+          </label>
+          <label>Motivo verificable de la decisión
+            <textarea id="conciliacionMotivo" required minlength="10" maxlength="2000" rows="3" placeholder="Describe qué cotejaste y la razón de la elección."></textarea>
+          </label>
+          <p id="conciliacionError" class="inline-alert error hidden" role="alert"></p>
+          <div class="dialog-actions">
+            <button type="button" id="conciliacionCancelar" class="secondary">Cancelar</button>
+            <button type="submit">Registrar conciliación</button>
+          </div>
+        </form>
+      </dialog>
+    </section>
+    <section class="g1-panel admin-section" id="alertasAdmin" aria-labelledby="avisosRegistralesTitulo">
+      <div class="row-between"><h2 id="avisosRegistralesTitulo">Avisos registrales · prioridad baja</h2>
+        <button type="button" id="actualizarAvisosRegistrales" class="secondary">Actualizar avisos</button></div>
+      <p class="muted">Se informa si cambia el tipo de error de la consulta. Los avisos se consideran leídos automáticamente cuando ADMIN abre su detalle.</p>
+      <p id="avisosRegistralesEstado" role="status" aria-live="polite"></p>
+      <div id="avisosRegistralesLista" class="list" aria-busy="false"></div>
+      <dialog id="avisoRegistralDialog" class="action-dialog" aria-labelledby="avisoRegistralTitulo">
+        <h3 id="avisoRegistralTitulo">Detalle de aviso registral</h3>
+        <div id="avisoRegistralDetalle" aria-live="polite"></div>
+        <div class="dialog-actions"><button type="button" id="cerrarAvisoRegistral" class="secondary">Cerrar</button></div>
+      </dialog>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="../js/deployment.js"></script><script src="../js/core.js"></script><script src="../js/workspace-model.js"></script><script src="../js/shell.js"></script><script src="../js/app.js"></script>
+  <script src="../js/register-sw.js"></script>
+<script src="../js/admin-workflow.js"></script>
+</body>
+</html>

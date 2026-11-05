@@ -1,0 +1,1198 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum RolUsuario {
+  ADMIN
+  EMPRESARIO
+  EVALUADOR
+}
+
+enum EstadoEvaluacion {
+  BORRADOR
+  ENVIADA
+  EN_REVISION
+  CERRADA
+}
+
+// Campo legado retenido unicamente para conservar historial: P-02/P-08 prohiben
+// emitir nuevos dictamenes automaticos basados en promedio. No usar en flujos actuales.
+enum DictamenEvaluacion {
+  NO_APTO
+  EN_DESARROLLO
+  POTENCIAL_CERTIFICACION
+  NIVEL_AVANZADO
+}
+
+enum EstadoCertificacion {
+  PENDIENTE
+  EN_REVISION
+  APROBADA
+  RECHAZADA
+  VENCIDA
+}
+
+/// Identidad global. ADMIN, EMPRESARIO y EVALUADOR son roles técnicos; el liderazgo es una asignación por proyecto.
+model Usuario {
+  cortesALTRegistrados RegistroCorteALT[] @relation("CorteALTAdmin")
+  eventosALTComoActor EventoCorteALT[] @relation("EventoCorteALTActor")
+  aprobacionesDocumentalesVIS AceptacionDocumentalVIS[] @relation("AceptacionVISPrincipal")
+  inspeccionesPrincipalVIS InspeccionPrincipalVIS[] @relation("InspeccionVISPrincipal")
+  id                    Int          @id @default(autoincrement())
+  nombre                String
+  email                 String       @unique
+  passwordHash          String
+  rol                   RolUsuario
+  activo                Boolean      @default(true)
+  /// La revisión explícita Q-54 solo corresponde a bloqueos urgentes (SOL-53).
+  bloqueoUrgente        Boolean      @default(false)
+  /// Rotación de JWT: un token emitido antes del bloqueo no revive tras la reactivación.
+  versionSesion         Int          @default(0)
+  eventosComoAfectado   EventoEstadoCuenta[] @relation("CuentaAfectada")
+  eventosComoAdmin      EventoEstadoCuenta[] @relation("CuentaAdministrador")
+  creadoEn              DateTime     @default(now())
+
+  versionesPlanPropuestas VersionPlanProyecto[] @relation("PlanPropuestoPor")
+  regularizacionesQ75 RegularizacionPlanHistorico[] @relation("PlanRegularizadoPor")
+  proyectosCreados      ProyectoConsultoria[] @relation("ProyectoCreador")
+  configuracionesVIS    ConfiguracionVIS[] @relation("VISConfigAdmin")
+  eventosGobiernoVIS    EventoGobiernoVIS[] @relation("GobiernoVISActor")
+  piezasComunicablesResponsableVIS PiezaComunicableVIS[] @relation("PiezaVISResponsable")
+  versionesPiezaComunicableVIS VersionPiezaComunicableVIS[] @relation("VersionPiezaVISCreador")
+  participacionesConsultoria ParticipacionConsultor[]
+  brechasReportadas     BrechaProyecto[] @relation("BrechaReportada")
+  brechasCerradas       BrechaProyecto[] @relation("BrechaCerrada")
+  actividadesAsignadas  ActividadProyecto[] @relation("ActividadAsignada")
+  actividadesRevisor    ActividadProyecto[] @relation("ActividadRevisor")
+  versionesCoelaboradas DocumentoVersionProyecto[] @relation("VersionConsultorCoautor")
+  eventosProyecto       EventoProyecto[]
+  notificacionesDestino NotificacionProyecto[] @relation("NotificacionDestinatario")
+  condicionesConservacionRegistradas CondicionConservacionProyecto[] @relation("ConservacionRegistradaPor")
+  adicionalesPropuestos AcuerdoAdicionalProyecto[] @relation("AdicionalPropuestoPor")
+  adicionalesConfirmados AcuerdoAdicionalProyecto[] @relation("AdicionalConfirmadoPor")
+  adicionalesAceptados AcuerdoAdicionalProyecto[] @relation("AdicionalAceptadoPor")
+  adicionalesResueltos AcuerdoAdicionalProyecto[] @relation("AdicionalResueltoPor")
+  cambiosRepresentacionAdmin EventoRepresentacionEmpresa[] @relation("RepresentacionAdmin")
+  cambiosRepresentacionAnterior EventoRepresentacionEmpresa[] @relation("RepresentacionAnterior")
+  cambiosRepresentacionNuevo EventoRepresentacionEmpresa[] @relation("RepresentacionNuevo")
+  entregablesCreados    EntregableProyecto[] @relation("EntregableCreador")
+  versionesSubidas      DocumentoVersionProyecto[] @relation("VersionSubidaPor")
+  revisionesG2          RevisionDocumentalProyecto[] @relation("RevisionPor")
+  verificacionesG2      VerificacionOperativaProyecto[] @relation("VerificacionPor")
+  informesPreparacionG2 InformePreparacionProyecto[] @relation("InformePreparacionPor")
+  autorizacionesG3   AutorizacionDocumentoIA[] @relation("PermisoClienteG3")
+  analisisSolicitadosG3 AnalisisDocumentoIA[] @relation("AnalisisSolicitadoG3")
+  hallazgosRevisadosG3 HallazgoDocumentoIA[] @relation("HallazgoRevisadoG3")
+  empresaRepresentada    Empresa?  // SOL-42: inversa uno-a-uno (actual, no histórica)
+  evaluacionesCreadas   Evaluacion[] @relation("EvaluacionEmpresario")
+  respuestasActualizadas Respuesta[] @relation("RespuestaUltimoEditor")
+  historialCambiosDiagnostico CambioRespuestaDiagnostico[] @relation("CambioRespuestaAutor")
+  soportesSubidos       Soporte[]
+  informesCreados       Informe[]
+}
+
+model Empresa {
+  id                Int          @id @default(autoincrement())
+  nombre            String
+  nit               String       @unique
+  sector            String
+  tamano            String?
+  estado            String       @default("PENDIENTE")
+  observacionAdmin  String?
+  // SOL-42: la misma cuenta no representa dos empresas simultáneamente.
+  // El cambio de representante sustituye esta FK, sin borrar autoría histórica.
+  usuarioId         Int          @unique
+  creadaEn          DateTime     @default(now())
+  // F3-ANA-240: estado de procedencia separado del estado operativo legado.
+  // Las filas anteriores quedan LEGADO y NO se consideran verificadas automáticamente.
+  origenDatos       String       @default("LEGADO")
+  datosFuente       Json?
+  datosManual       Json?
+  referenciaManual  String?
+  constanciaRepresentacion String?
+  codigoConsulta    String?
+  consultadaEn      DateTime?
+  bloqueoNuevosProyectos Boolean @default(false)
+  revisionPendiente Boolean @default(false)
+  revisadaPorAdminId Int?
+  huellaDecisionFuente String?
+  eventosRegistrales EventoConsultaEmpresa[]
+
+  usuario           Usuario      @relation(fields: [usuarioId], references: [id])
+  proyectos          ProyectoConsultoria[]
+  cambiosRepresentacion EventoRepresentacionEmpresa[]
+  evaluaciones      Evaluacion[]
+}
+
+
+/// Historial de consultas/cambios de estado, independiente de los datos que el proveedor declaró.
+/// No se borra cuando desaparece un registro temporal pendiente de conciliación.
+model EventoConsultaEmpresa {
+  id             Int      @id @default(autoincrement())
+  empresaId      Int
+  actorAdminId   Int?
+  tipo           String
+  prioridad      String   @default("BAJA")
+  destinatarioAdminId Int?
+  leidaEn        DateTime?
+  codigo         String?
+  diferencias    Json?
+  datosManual    Json?
+  referenciaManual String?
+  registradaEn   DateTime @default(now())
+  empresa        Empresa  @relation(fields: [empresaId], references: [id], onDelete: Restrict)
+  @@index([empresaId, registradaEn])
+}
+
+model Area {
+  id          Int        @id @default(autoincrement())
+  nombre      String
+  descripcion String?
+  orden       Int
+
+  preguntas   Pregunta[]
+  soportes    Soporte[]
+}
+
+model Pregunta {
+  id          Int        @id @default(autoincrement())
+  areaId      Int
+  texto       String
+  descripcion String?
+  orden       Int
+
+  area        Area       @relation(fields: [areaId], references: [id])
+  respuestas  Respuesta[]
+}
+
+model Evaluacion {
+  id                  Int                 @id @default(autoincrement())
+  empresaId           Int
+  empresarioId        Int
+  estado              EstadoEvaluacion    @default(BORRADOR)
+  puntajePromedio     Float?
+  dictamen            DictamenEvaluacion?
+  tieneSoportes       Boolean             @default(false)
+  requiereSoportes    Boolean             @default(false)
+  prioritaria         Boolean             @default(false)
+  mensajeDecision     String?
+  creadaEn            DateTime            @default(now())
+  enviadaEn           DateTime?
+
+  proyectoId          Int?
+  proyecto            ProyectoConsultoria? @relation(fields: [proyectoId], references: [id], onDelete: Restrict)
+  brechasProyecto     BrechaProyecto[]
+  empresa             Empresa             @relation(fields: [empresaId], references: [id])
+  empresario          Usuario             @relation("EvaluacionEmpresario", fields: [empresarioId], references: [id])
+
+  respuestas          Respuesta[]
+  soportes            Soporte[]
+  informes            Informe[]
+  certificacion       Certificacion?
+
+  @@unique([id, proyectoId]) // Necesario para FK compuesta de origen de brecha (SQL G1)
+}
+
+model Respuesta {
+  id                    Int        @id @default(autoincrement())
+  evaluacionId          Int
+  preguntaId            Int
+  valor                 Int
+  comentario            String?
+  comentarioEvaluador   String?
+  actualizadaEn         DateTime   @updatedAt
+
+  evaluacion            Evaluacion @relation(fields: [evaluacionId], references: [id])
+  pregunta              Pregunta   @relation(fields: [preguntaId], references: [id])
+
+  /// Q-59: último editor identificado solo para cambios realizados desde esta migración.
+  actualizadaPorId       Int?
+  actualizadaPor         Usuario? @relation("RespuestaUltimoEditor", fields: [actualizadaPorId], references: [id], onDelete: Restrict)
+  cambios                CambioRespuestaDiagnostico[]
+  @@unique([evaluacionId, preguntaId])
+}
+
+/// Q-59: no reescribir respuestas anteriores ni adjudicar autoría retroactiva.
+/// Cada modificación nueva crea un evento inmutable en la misma transacción.
+model CambioRespuestaDiagnostico {
+  id                Int       @id @default(autoincrement())
+  respuestaId       Int
+  autorId           Int
+  valorAnterior     Int?
+  comentarioAnterior String?
+  valorNuevo        Int
+  comentarioNuevo   String?
+  creadoEn          DateTime  @default(now())
+  respuesta         Respuesta @relation(fields: [respuestaId], references: [id], onDelete: Restrict)
+  autor             Usuario   @relation("CambioRespuestaAutor", fields: [autorId], references: [id], onDelete: Restrict)
+  @@index([respuestaId, creadoEn])
+}
+
+model Soporte {
+  id                  Int        @id @default(autoincrement())
+  evaluacionId        Int
+  areaId              Int?
+  subidoPorId         Int
+  nombreOriginal      String
+  rutaArchivo         String
+  mimeTipo            String
+  tamanoBytes         Int
+
+  fechaVencimiento    DateTime?
+  estadoIA            String?
+  observacionIA       String?
+
+  creadoEn            DateTime   @default(now())
+
+  evaluacion          Evaluacion @relation(fields: [evaluacionId], references: [id])
+  area                Area?      @relation(fields: [areaId], references: [id])
+  subidoPor           Usuario    @relation(fields: [subidoPorId], references: [id])
+}
+
+model Informe {
+  id                  Int        @id @default(autoincrement())
+  evaluacionId        Int
+  creadoPorId         Int
+  resumen             String
+  recomendaciones     String
+  creadoEn            DateTime   @default(now())
+
+  evaluacion          Evaluacion @relation(fields: [evaluacionId], references: [id])
+  creadoPor           Usuario    @relation(fields: [creadoPorId], references: [id])
+}
+
+model Certificacion {
+  id                  Int                   @id @default(autoincrement())
+  evaluacionId        Int                   @unique
+  estado              EstadoCertificacion   @default(PENDIENTE)
+  prioritaria         Boolean               @default(false)
+  vigenteDesde        DateTime?
+  vigenteHasta        DateTime?
+  observaciones       String?
+  creadaEn            DateTime              @default(now())
+  actualizadaEn       DateTime              @updatedAt
+
+  evaluacion          Evaluacion            @relation(fields: [evaluacionId], references: [id])
+}
+// G1: Tablas aditivas; no alterar ni borrar los datos historicos G0.
+enum EstadoProyectoConsultoria {
+  ACTIVO
+  SUSPENDIDO
+  CERRADO
+}
+
+enum EstadoBrechaProyecto {
+  ABIERTA
+  EN_TRATAMIENTO
+  PROPUESTA_CIERRE
+  CERRADA
+}
+
+enum EstadoActividadProyecto {
+  PENDIENTE
+  EN_PROGRESO
+  EN_REVISION
+  COMPLETADA
+  CANCELADA
+}
+
+enum TipoResponsableActividad {
+  CLIENTE
+  CONSULTORA
+}
+
+/// Espacio segregado de la consultoría; la empresa y sus participaciones determinan acceso.
+model ProyectoConsultoria {
+  publicacionesVIS PublicacionConfirmadaVIS[]
+  corteOperativoALT RegistroCorteALT?
+  ciclosOperativosVIS CicloOperativoVIS[]
+  aceptacionesDocumentalesVIS AceptacionDocumentalVIS[]
+  inspeccionesPrincipalVIS InspeccionPrincipalVIS[]
+  id                  Int @id @default(autoincrement())
+  empresaId           Int
+  creadoPorId         Int
+  nombre              String @db.VarChar(200)
+  referenciaContrato  String @db.VarChar(120)
+  alcanceContractual  String @db.Text
+  alcanceSGSIPropuesto String? @db.Text
+  // BE-01: clasificacion inicial del servicio. NULL/NULL identifica exclusivamente
+  // expedientes preexistentes sin clasificacion acreditada, NO una norma inferida.
+  // Crear nuevos proyectos por API exige la pareja ISO_27001/2022 o ISO_42001/2023.
+  // Restricciones de integridad complementarias documentadas por separado.
+  // No convertir db push en una migración de producción.
+  normaCodigo         String? @db.VarChar(9)
+  edicionNormativa    String? @db.VarChar(4)
+  // IA250: NULL = proyecto histórico sin decisión de IA acreditada.
+  // HABILITADA = elección inicial por defecto; ambas desactivaciones son irreversibles.
+  // La migración experimental 005 NO rellena históricos.
+  iaEstado            String? @default("HABILITADA") @db.VarChar(24)
+  estado              EstadoProyectoConsultoria @default(ACTIVO)
+  creadoEn            DateTime @default(now())
+  actualizadoEn       DateTime @updatedAt
+  empresa             Empresa @relation(fields: [empresaId], references: [id], onDelete: Restrict)
+  creadoPor           Usuario @relation("ProyectoCreador", fields: [creadoPorId], references: [id], onDelete: Restrict)
+  participaciones     ParticipacionConsultor[]
+  diagnosticos        Evaluacion[]
+  brechas             BrechaProyecto[]
+  actividades         ActividadProyecto[]
+  versionesPlan        VersionPlanProyecto[]
+  elegibilidadQ75     ActividadElegibleQ75[]
+  regularizacionesQ75 RegularizacionPlanHistorico[]
+  eventos             EventoProyecto[]
+  notificaciones      NotificacionProyecto[]
+  acuerdosAdicionales AcuerdoAdicionalProyecto[]
+  condicionesConservacion CondicionConservacionProyecto[]
+  entregablesG2       EntregableProyecto[]
+  documentosG2        DocumentoVersionProyecto[]
+  propuestasPublicacionVIS PropuestaPublicacionVIS[]
+  gobiernosRecursoVIS GobiernoRecursoVIS[]
+  piezasComunicablesVIS PiezaComunicableVIS[]
+  revisionesG2        RevisionDocumentalProyecto[]
+  verificacionesG2    VerificacionOperativaProyecto[]
+  informesG2          InformePreparacionProyecto[]
+  autorizacionesG3    AutorizacionDocumentoIA[]
+  analisisG3          AnalisisDocumentoIA[]
+  hallazgosG3         HallazgoDocumentoIA[]
+  registrosEventoIA   RegistroEventoIA[]
+  resultadosAutomaticosIA ResultadoAutomaticoIA[]
+  @@index([empresaId, estado])
+}
+
+/// REQ-02 / SOL-11/14. Las versiones son historicas e inmutables una vez resueltas.
+/// La aceptacion es EXTERNA por representante; el principal registra la constancia.
+model VersionPlanProyecto {
+  id Int @id @default(autoincrement())
+  proyectoId Int
+  numero Int
+  estado String @default("PROPUESTO") @db.VarChar(20)
+  contenido String @db.Text
+  actividadIds Json
+  instantaneaActividades Json
+  referenciaPresentacion String @db.VarChar(250)
+  creadoPorId Int
+  creadoPor Usuario @relation("PlanPropuestoPor", fields: [creadoPorId], references: [id], onDelete: Restrict)
+  creadoEn DateTime @default(now())
+  motivoNoAceptacion String? @db.Text
+  motivoRetiro String? @db.Text
+  noAceptadoEn DateTime?
+  referenciaAceptacion String? @db.VarChar(250)
+  constanciaAceptacion String? @db.Text
+  aceptacionRegistradaEn DateTime?
+  proyecto ProyectoConsultoria @relation(fields: [proyectoId], references: [id], onDelete: Restrict)
+  actividadesAutorizadas ActividadProyecto[]
+  regularizacionHistorica RegularizacionPlanHistorico?
+  @@unique([id, proyectoId])
+  @@unique([proyectoId, numero])
+  @@index([proyectoId, estado])
+}
+
+/// Q-75: instantanea de actividades antiguas potencialmente elegibles capturada AL MIGRAR.
+/// Que una actividad sea elegible no demuestra que hubiera acuerdo valido.
+model ActividadElegibleQ75 {
+  actividadId Int @id
+  proyectoId Int
+  estadoEnCorte EstadoActividadProyecto
+  capturadaEn DateTime @default(now())
+  proyecto ProyectoConsultoria @relation(fields: [proyectoId], references: [id], onDelete: Restrict)
+  actividad ActividadProyecto @relation(fields: [actividadId, proyectoId], references: [id, proyectoId], onDelete: Restrict)
+  @@unique([actividadId, proyectoId])
+  @@index([proyectoId])
+}
+
+/// Q-75: registro INMUTABLE de regularizacion excepcional y prueba PDF privada.
+/// fechaAceptacionHistorica indica el hecho pasado; registradoEn, el hecho actual.
+model RegularizacionPlanHistorico {
+  id Int @id @default(autoincrement())
+  proyectoId Int
+  versionPlanId Int @unique
+  fechaAceptacionHistorica DateTime
+  registradoEn DateTime @default(now())
+  medioAceptacion String @db.VarChar(80)
+  referenciaAceptacion String @db.VarChar(250)
+  constanciaAceptacion String @db.Text
+  justificacion String @db.Text
+  archivoEvidencia String @db.VarChar(40)
+  nombreArchivo String @db.VarChar(180)
+  sha256Evidencia String @db.VarChar(64)
+  tamanoBytes Int
+  registradoPorId Int
+  registradoPor Usuario @relation("PlanRegularizadoPor", fields: [registradoPorId], references: [id], onDelete: Restrict)
+  proyecto ProyectoConsultoria @relation(fields: [proyectoId], references: [id], onDelete: Restrict)
+  versionPlan VersionPlanProyecto @relation(fields: [versionPlanId, proyectoId], references: [id, proyectoId], onDelete: Restrict)
+  @@unique([versionPlanId, proyectoId])
+  @@index([proyectoId, registradoEn])
+}
+
+/// Asignación vigente del consultor; principal identifica liderazgo del proyecto.
+model ParticipacionConsultor {
+  id              Int @id @default(autoincrement())
+  proyectoId      Int
+  usuarioId       Int
+  principal       Boolean @default(false)
+  activo          Boolean @default(true)
+  asignadoEn      DateTime @default(now())
+  retiradoEn      DateTime?
+  proyecto        ProyectoConsultoria @relation(fields: [proyectoId], references: [id], onDelete: Restrict)
+  usuario         Usuario @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
+  @@index([proyectoId, activo])
+  @@index([usuarioId, activo])
+  // SQL: una unica participacion activa por usuario/proyecto y un principal por proyecto.
+}
+
+/// Brecha documentada distinta de la puntuación de autodiagnóstico.
+model BrechaProyecto {
+  id              Int @id @default(autoincrement())
+  proyectoId      Int
+  titulo          String @db.VarChar(180)
+  descripcion     String @db.Text
+  criterio        String @db.Text
+  estado          EstadoBrechaProyecto @default(ABIERTA)
+  reportadaPorId  Int
+  origenEvaluacionId Int?
+  cerradaPorId    Int?
+  justificacionCierre String? @db.Text
+  creadaEn        DateTime @default(now())
+  cerradaEn       DateTime?
+  proyecto        ProyectoConsultoria @relation(fields: [proyectoId], references: [id], onDelete: Restrict)
+  reportadaPor    Usuario @relation("BrechaReportada", fields: [reportadaPorId], references: [id], onDelete: Restrict)
+  origenEvaluacion Evaluacion? @relation(fields: [origenEvaluacionId], references: [id], onDelete: Restrict)
+  cerradaPor      Usuario? @relation("BrechaCerrada", fields: [cerradaPorId], references: [id], onDelete: Restrict)
+  actividades     ActividadBrechaProyecto[]
+  @@unique([id, proyectoId])
+  @@index([proyectoId, estado])
+}
+
+/// Tarea de mitigación con responsable, estado y vínculo a brechas.
+model ActividadProyecto {
+  id                 Int @id @default(autoincrement())
+  proyectoId         Int
+  titulo             String @db.VarChar(180)
+  descripcion        String? @db.Text
+  tipoResponsable    TipoResponsableActividad
+  asignadoAId        Int
+  /// SOL-17: consultor encargado de revisar los aportes de empresa; nunca sustituye al aportante.
+  consultorRevisorId Int?
+  /// Q-65: clasificación explícita declarada por el principal; no sustituye control del alcance del contrato.
+  cobertura String @default("BASE") @db.VarChar(16)
+  acuerdoAdicionalId Int?
+  acuerdoAdicional AcuerdoAdicionalProyecto? @relation(fields: [acuerdoAdicionalId, proyectoId], references: [id, proyectoId], onDelete: Restrict)
+  /// Q-67: referencia historica, no traspasa evidencias, estados ni aprobaciones.
+  actividadOrigenId Int?
+  actividadOrigen ActividadProyecto? @relation("ContinuidadActividadQ67", fields: [actividadOrigenId, proyectoId], references: [id, proyectoId], onDelete: NoAction, onUpdate: NoAction)
+  continuaciones ActividadProyecto[] @relation("ContinuidadActividadQ67")
+  estado             EstadoActividadProyecto @default(PENDIENTE)
+  /// REQ-02: una actividad no queda autorizada por la sola creación.
+  planAceptadoId Int?
+  elegibilidadQ75 ActividadElegibleQ75?
+  planAceptado VersionPlanProyecto? @relation(fields: [planAceptadoId, proyectoId], references: [id, proyectoId], onDelete: Restrict)
+  fechaObjetivo      DateTime?
+  creadaEn           DateTime @default(now())
+  actualizadoEn      DateTime @updatedAt
+  proyecto           ProyectoConsultoria @relation(fields: [proyectoId], references: [id], onDelete: Restrict)
+  asignadoA          Usuario @relation("ActividadAsignada", fields: [asignadoAId], references: [id], onDelete: Restrict)
+  consultorRevisor   Usuario? @relation("ActividadRevisor", fields: [consultorRevisorId], references: [id], onDelete: Restrict)
+  brechas            ActividadBrechaProyecto[]
+  entregablesG2      EntregableProyecto[]
+  verificacionesG2   VerificacionOperativaProyecto[]
+  notificaciones     NotificacionProyecto[]
+  @@unique([id, proyectoId])
+  @@index([proyectoId, estado])
+  @@index([asignadoAId, estado])
+  @@index([consultorRevisorId, estado])
+  @@index([actividadOrigenId, proyectoId])
+  @@index([planAceptadoId, proyectoId])
+}
+
+model ActividadBrechaProyecto {
+  proyectoId   Int
+  actividadId  Int
+  brechaId     Int
+  /// DEC-Q73: exclusion por brecha sin borrar el enlace ni cancelar la tarea global.
+  excluidaEn   DateTime?
+  actividad    ActividadProyecto @relation(fields: [actividadId, proyectoId], references: [id, proyectoId], onDelete: Restrict)
+  brecha       BrechaProyecto @relation(fields: [brechaId, proyectoId], references: [id, proyectoId], onDelete: Restrict)
+  @@id([actividadId, brechaId])
+  @@index([brechaId, proyectoId])
+}
+
+/// Q-65: propuesta técnica, confirmación comercial externa por ADMIN y
+/// registro por principal de aceptación externa del alcance. Nunca firma ni factura.
+model AcuerdoAdicionalProyecto {
+  id Int @id @default(autoincrement())
+  proyectoId Int
+  propuestoPorId Int
+  titulo String @db.VarChar(180)
+  descripcion String @db.Text
+  estado String @default("PROPUESTO") @db.VarChar(20)
+  referenciaAcuerdo String? @db.VarChar(250)
+  constanciaValidacion String? @db.Text
+  confirmadoPorId Int?
+  confirmadoEn DateTime?
+  referenciaAceptacion String? @db.VarChar(250)
+  constanciaAceptacion String? @db.Text
+  aceptacionRegistradaPorId Int?
+  aceptacionRegistradaEn DateTime?
+  /// Q-66: cancelar o modificar el alcance no elimina la autorizacion historica.
+  referenciaCambio String? @db.VarChar(250)
+  constanciaCambio String? @db.Text
+  justificacionCambio String? @db.Text
+  resueltoPorId Int?
+  resueltoEn DateTime?
+  creadoEn DateTime @default(now())
+  proyecto ProyectoConsultoria @relation(fields: [proyectoId], references: [id], onDelete: Restrict)
+  propuestoPor Usuario @relation("AdicionalPropuestoPor", fields: [propuestoPorId], references: [id], onDelete: Restrict)
+  confirmadoPor Usuario? @relation("AdicionalConfirmadoPor", fields: [confirmadoPorId], references: [id], onDelete: Restrict)
+  aceptacionRegistradaPor Usuario? @relation("AdicionalAceptadoPor", fields: [aceptacionRegistradaPorId], references: [id], onDelete: Restrict)
+  resueltoPor Usuario? @relation("AdicionalResueltoPor", fields: [resueltoPorId], references: [id], onDelete: Restrict)
+  actividades ActividadProyecto[]
+  @@unique([id, proyectoId])
+  @@index([proyectoId, estado])
+}
+
+model EventoProyecto {
+  id            Int @id @default(autoincrement())
+  proyectoId    Int
+  usuarioId     Int
+  accion        String @db.VarChar(80)
+  detalle       Json?
+  creadoEn      DateTime @default(now())
+  proyecto      ProyectoConsultoria @relation(fields: [proyectoId], references: [id], onDelete: Restrict)
+  usuario       Usuario @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
+  avisosTerminacion NotificacionProyecto[] @relation("AvisoTerminacionQ63")
+  registroIA RegistroEventoIA?
+  @@index([proyectoId, creadoEn])
+}
+
+// DEC-Q57: notificación interna persistente para el representante en el momento del cambio.
+// La lectura nunca elimina ni modifica el evento que la originó.
+model NotificacionProyecto {
+  id              Int @id @default(autoincrement())
+  proyectoId      Int
+  actividadId     Int?
+  destinatarioId  Int
+  tipo            String @db.VarChar(60)
+  fechaAnterior   DateTime?
+  fechaNueva      DateTime?
+  justificacion   String @db.Text
+  creadaEn        DateTime @default(now())
+  leidaEn         DateTime?
+  // DEC-Q58: nunca modificar destinatario histórico; crear una copia vinculada al origen.
+  origenNotificacionId Int?
+  cambioRepresentacionId Int?
+  eventoTerminacionId Int? @unique
+  eventoTerminacion EventoProyecto? @relation("AvisoTerminacionQ63", fields: [eventoTerminacionId], references: [id], onDelete: Restrict)
+  origenNotificacion NotificacionProyecto? @relation("ReemisionQ58", fields: [origenNotificacionId], references: [id], onDelete: Restrict)
+  reemisiones NotificacionProyecto[] @relation("ReemisionQ58")
+  cambioRepresentacion EventoRepresentacionEmpresa? @relation(fields: [cambioRepresentacionId], references: [id], onDelete: Restrict)
+  proyecto        ProyectoConsultoria @relation(fields: [proyectoId], references: [id], onDelete: Restrict)
+  actividad       ActividadProyecto? @relation(fields: [actividadId, proyectoId], references: [id, proyectoId], onDelete: Restrict)
+  destinatario    Usuario @relation("NotificacionDestinatario", fields: [destinatarioId], references: [id], onDelete: Restrict)
+  @@index([destinatarioId, leidaEn, creadaEn])
+  @@index([proyectoId, creadaEn])
+  @@index([origenNotificacionId])
+  @@index([cambioRepresentacionId])
+}
+
+// SOL-28 / DEC-Q58: registro permanente de sustituciones incluso sin proyectos.
+model EventoRepresentacionEmpresa {
+  id Int @id @default(autoincrement())
+  empresaId Int
+  adminId Int
+  representanteAnteriorId Int
+  representanteNuevoId Int
+  motivo String @db.Text
+  constanciaValidacion String @db.Text
+  creadaEn DateTime @default(now())
+  empresa Empresa @relation(fields: [empresaId], references: [id], onDelete: Restrict)
+  admin Usuario @relation("RepresentacionAdmin", fields: [adminId], references: [id], onDelete: Restrict)
+  anterior Usuario @relation("RepresentacionAnterior", fields: [representanteAnteriorId], references: [id], onDelete: Restrict)
+  nuevo Usuario @relation("RepresentacionNuevo", fields: [representanteNuevoId], references: [id], onDelete: Restrict)
+  reemisiones NotificacionProyecto[]
+  @@index([empresaId, creadaEn])
+}
+
+// G2: Entregables versionados, aceptación documental y verificación independiente.
+// Todas las referencias a actividades y entregables incluyen el proyecto para evitar cruces.
+enum EstadoCoelaboracionG2 {
+  NO_DECLARADA
+  DECLARADA
+  CONFIRMADA
+  RECHAZADA
+}
+
+enum EstadoRevisionDocumentoG2 {
+  PENDIENTE
+  ACEPTADA
+  CORRECCION_REQUERIDA
+}
+
+enum ResultadoVerificacionG2 {
+  VERIFICADA
+  NO_VERIFICADA
+  NO_APLICA
+}
+
+/// Entregable ligado a actividad; versionActual apunta a versión vigente.
+model EntregableProyecto {
+  id             Int @id @default(autoincrement())
+  proyectoId     Int
+  actividadId    Int
+  titulo         String @db.VarChar(180)
+  criterio       String @db.Text
+  versionActual  Int @default(0)
+  creadoPorId    Int
+  creadoEn       DateTime @default(now())
+  proyecto       ProyectoConsultoria @relation(fields: [proyectoId], references: [id], onDelete: Restrict)
+  actividad      ActividadProyecto @relation(fields: [actividadId, proyectoId], references: [id, proyectoId], onDelete: Restrict)
+  creadoPor      Usuario @relation("EntregableCreador", fields: [creadoPorId], references: [id], onDelete: Restrict)
+  versiones      DocumentoVersionProyecto[]
+  @@unique([id, proyectoId])
+  @@index([actividadId, proyectoId])
+}
+
+/// Versionado privado de evidencia y resumen SHA-256; el archivo no es público.
+model DocumentoVersionProyecto {
+  id               Int @id @default(autoincrement())
+  proyectoId       Int
+  entregableId     Int
+  numero           Int
+  nombreOriginal   String @db.VarChar(180)
+  archivoAlmacenado String @db.VarChar(100)
+  mime             String @default("application/pdf") @db.VarChar(100)
+  tamanoBytes      Int
+  sha256           String @db.VarChar(64)
+  subidoPorId      Int
+  /// Q-55: declaración por representante para ESTA versión, nunca inferida de otras versiones.
+  estadoCoelaboracion EstadoCoelaboracionG2 @default(NO_DECLARADA)
+  consultorCoautorId Int?
+  respuestaCoelaboracionEn DateTime?
+  observacionCoelaboracion String? @db.Text
+  estadoRevision   EstadoRevisionDocumentoG2 @default(PENDIENTE)
+  creadoEn         DateTime @default(now())
+  entregable       EntregableProyecto @relation(fields: [entregableId, proyectoId], references: [id, proyectoId], onDelete: Restrict)
+  proyecto         ProyectoConsultoria @relation(fields: [proyectoId], references: [id], onDelete: Restrict)
+  subidoPor        Usuario @relation("VersionSubidaPor", fields: [subidoPorId], references: [id], onDelete: Restrict)
+  consultorCoautor  Usuario? @relation("VersionConsultorCoautor", fields: [consultorCoautorId], references: [id], onDelete: Restrict)
+  revision         RevisionDocumentalProyecto?
+  autorizacionIA   AutorizacionDocumentoIA?
+  analisisIA       AnalisisDocumentoIA[]
+  registrosEventoIA RegistroEventoIA[]
+  resultadosAutomaticosIA ResultadoAutomaticoIA[]
+  @@unique([entregableId, numero])
+  @@unique([id, proyectoId])
+  @@index([proyectoId, creadoEn])
+  @@index([consultorCoautorId, estadoCoelaboracion])
+}
+
+/// Revisión de una versión concreta, no demuestra implementación real.
+model RevisionDocumentalProyecto {
+  id             Int @id @default(autoincrement())
+  proyectoId     Int
+  versionId      Int @unique
+  resultado      EstadoRevisionDocumentoG2
+  observacion    String @db.Text
+  revisadoPorId  Int
+  revisadoEn     DateTime @default(now())
+  version        DocumentoVersionProyecto @relation(fields: [versionId, proyectoId], references: [id, proyectoId], onDelete: Restrict)
+  revisadoPor    Usuario @relation("RevisionPor", fields: [revisadoPorId], references: [id], onDelete: Restrict)
+  proyecto       ProyectoConsultoria @relation(fields: [proyectoId], references: [id], onDelete: Restrict)
+  @@unique([versionId, proyectoId]) // Necesario para relacion 1:1 compuesta en Prisma 5.22
+  @@index([proyectoId, revisadoEn])
+}
+
+/// Validación de ejecución de control separada de aceptación del archivo.
+model VerificacionOperativaProyecto {
+  id             Int @id @default(autoincrement())
+  proyectoId     Int
+  actividadId    Int
+  resultado      ResultadoVerificacionG2
+  metodo         String @db.VarChar(180)
+  evidencia      String @db.Text
+  justificacion  String @db.Text
+  verificadoPorId Int
+  verificadoEn   DateTime @default(now())
+  proyecto       ProyectoConsultoria @relation(fields: [proyectoId], references: [id], onDelete: Restrict)
+  actividad      ActividadProyecto @relation(fields: [actividadId, proyectoId], references: [id, proyectoId], onDelete: Restrict)
+  verificadoPor  Usuario @relation("VerificacionPor", fields: [verificadoPorId], references: [id], onDelete: Restrict)
+  @@index([actividadId, verificadoEn])
+  @@index([proyectoId, verificadoEn])
+}
+
+/// Informe interno de preparación; NO certificado ISO oficial.
+model InformePreparacionProyecto {
+  id             Int @id @default(autoincrement())
+  proyectoId     Int
+  numero         Int
+  resumen        String @db.Text
+  recomendaciones String @db.Text
+  instantanea    Json
+  publicadoPorId Int
+  publicadoEn    DateTime @default(now())
+  proyecto       ProyectoConsultoria @relation(fields: [proyectoId], references: [id], onDelete: Restrict)
+  publicadoPor   Usuario @relation("InformePreparacionPor", fields: [publicadoPorId], references: [id], onDelete: Restrict)
+  @@unique([proyectoId, numero])
+  @@index([proyectoId, publicadoEn])
+}
+
+// G3: análisis opcional de documentos autorizados, sin decisiones automáticas de cumplimiento.
+enum ClasificacionDocumentoG3 {
+  PUBLICO
+  INTERNO
+}
+
+enum EstadoAnalisisG3 {
+  EN_PROCESO
+  LISTO
+  FALLIDO
+}
+
+enum EstadoHallazgoG3 {
+  PENDIENTE
+  CONFIRMADO
+  DESCARTADO
+}
+
+/// Autorización revocable del representante para una versión/documento concreto.
+model AutorizacionDocumentoIA {
+  id             Int @id @default(autoincrement())
+  proyectoId     Int
+  versionId      Int @unique
+  autorizadoPorId Int
+  clasificacion  ClasificacionDocumentoG3
+  finalidad      String @db.VarChar(240)
+  autorizadoEn   DateTime @default(now())
+  revocadoEn     DateTime?
+  proyecto       ProyectoConsultoria @relation(fields: [proyectoId], references: [id], onDelete: Restrict)
+  version        DocumentoVersionProyecto @relation(fields: [versionId, proyectoId], references: [id, proyectoId], onDelete: Restrict)
+  autorizadoPor  Usuario @relation("PermisoClienteG3", fields: [autorizadoPorId], references: [id], onDelete: Restrict)
+  analisis       AnalisisDocumentoIA[]
+  @@unique([id, proyectoId])
+  @@unique([versionId, proyectoId])
+  @@index([proyectoId, autorizadoEn])
+}
+
+/// Solicitud trazable IA; fallos y versión/modelo quedan registrados.
+model AnalisisDocumentoIA {
+  id             Int @id @default(autoincrement())
+  proyectoId     Int
+  versionId      Int
+  autorizacionId Int
+  solicitadoPorId Int
+  estado         EstadoAnalisisG3 @default(EN_PROCESO)
+  modelo         String @db.VarChar(100)
+  criterios      Json
+  sha256         String @db.VarChar(64)
+  longitudTexto  Int @default(0)
+  advertencia    String? @db.VarChar(240)
+  errorCodigo    String? @db.VarChar(80)
+  creadoEn       DateTime @default(now())
+  terminadoEn    DateTime?
+  proyecto       ProyectoConsultoria @relation(fields: [proyectoId], references: [id], onDelete: Restrict)
+  version        DocumentoVersionProyecto @relation(fields: [versionId, proyectoId], references: [id, proyectoId], onDelete: Restrict)
+  autorizacion   AutorizacionDocumentoIA @relation(fields: [autorizacionId, proyectoId], references: [id, proyectoId], onDelete: Restrict)
+  solicitadoPor  Usuario @relation("AnalisisSolicitadoG3", fields: [solicitadoPorId], references: [id], onDelete: Restrict)
+  hallazgos      HallazgoDocumentoIA[]
+  @@unique([id, proyectoId])
+  @@index([proyectoId, creadoEn])
+  @@index([versionId, estado])
+}
+
+/// F3-ANA-254: punto de inicio explícito de la bandeja (no releer eventos históricos).
+model ControlBandejaIA {
+  id Int @id
+  fechaInicio DateTime @default(now())
+  eventoBaseId Int
+}
+
+/// Libro duradero de eventos documentales: no es análisis ni autorización G3.
+/// Se registra cada evento UNA vez y solo las candidatas admitidas quedan PENDIENTE.
+/// Reserva y liquidación IA255 son experimentales; despacho de Ollama NO habilitado.
+model RegistroEventoIA {
+  id Int @id @default(autoincrement())
+  eventoId Int @unique
+  proyectoId Int
+  versionId Int?
+  sha256 String? @db.VarChar(64)
+  estado String @db.VarChar(24)
+  motivoCodigo String? @db.VarChar(80)
+  // IA255: lease con token de intento irrepetible; el consumidor todavía NO se ejecuta automáticamente.
+  intentos Int @default(0)
+  leaseToken String? @db.VarChar(36)
+  leaseHasta DateTime?
+  errorCodigo String? @db.VarChar(80)
+  creadoEn DateTime @default(now())
+  tomadoEn DateTime?
+  terminadoEn DateTime?
+  evento EventoProyecto @relation(fields: [eventoId], references: [id], onDelete: Restrict)
+  proyecto ProyectoConsultoria @relation(fields: [proyectoId], references: [id], onDelete: Restrict)
+  version DocumentoVersionProyecto? @relation(fields: [versionId, proyectoId], references: [id, proyectoId], onDelete: Restrict)
+  resultadoAutomaticoIA ResultadoAutomaticoIA?
+  @@index([proyectoId, estado])
+  @@index([versionId])
+}
+
+/// F3-ANA-256/261 | Resultado del revisor ligero, separado de G3 humano.
+/// Requiere SQL 008 y SQL 009 con procedencia verificada antes de despachar.
+/// Su aparición no implica certificación, cumplimiento o aprobación.
+model ResultadoAutomaticoIA {
+  id Int @id @default(autoincrement())
+  registroId Int @unique
+  proyectoId Int
+  versionId Int
+  sha256 String @db.VarChar(64)
+  catalogo String @db.VarChar(20)
+  // F3-ANA-261: históricos conservan NULL/NULL; altas nuevas deben indicar
+  // solo el método realmente probado y el perfil parcial MIC-74-04.
+  metodo String? @db.VarChar(32)
+  perfil String? @db.VarChar(24)
+  observaciones Json
+  creadoEn DateTime @default(now())
+  registro RegistroEventoIA @relation(fields: [registroId], references: [id], onDelete: Restrict)
+  proyecto ProyectoConsultoria @relation(fields: [proyectoId], references: [id], onDelete: Restrict)
+  version DocumentoVersionProyecto @relation(fields: [versionId, proyectoId], references: [id, proyectoId], onDelete: Restrict)
+  @@index([proyectoId, versionId])
+}
+
+/// Sugerencia preliminar sometida a decisión humana. No cierra brechas.
+model HallazgoDocumentoIA {
+  id             Int @id @default(autoincrement())
+  proyectoId     Int
+  analisisId     Int
+  criterio       String @db.VarChar(320)
+  observacion    String @db.VarChar(1200)
+  cita           String @db.VarChar(500)
+  pagina         Int
+  sugerencia     String @db.VarChar(1200)
+  estado         EstadoHallazgoG3 @default(PENDIENTE)
+  revisadoPorId  Int?
+  motivoDecision String? @db.VarChar(1200)
+  revisadoEn     DateTime?
+  analisis       AnalisisDocumentoIA @relation(fields: [analisisId, proyectoId], references: [id, proyectoId], onDelete: Restrict)
+  proyecto       ProyectoConsultoria @relation(fields: [proyectoId], references: [id], onDelete: Restrict)
+  revisadoPor    Usuario? @relation("HallazgoRevisadoG3", fields: [revisadoPorId], references: [id], onDelete: Restrict)
+  @@index([analisisId, estado])
+  @@index([proyectoId, estado])
+}
+
+
+/// Auditoría append-only desde API: contexto de permisos, autor y motivo. No hay trigger de inmutabilidad DB.
+model EventoEstadoCuenta {
+  id             Int      @id @default(autoincrement())
+  usuarioId      Int
+  adminId        Int
+  accion         String   @db.VarChar(40)
+  motivo         String   @db.Text
+  relaciones     Json
+  creadoEn       DateTime @default(now())
+  usuario        Usuario  @relation("CuentaAfectada", fields: [usuarioId], references: [id], onDelete: Restrict)
+  administrador  Usuario  @relation("CuentaAdministrador", fields: [adminId], references: [id], onDelete: Restrict)
+  @@index([usuarioId, creadoEn])
+}
+
+// DEC-Q60 / DEC-P05: historial contractual registrado por ADMIN, no aprobación jurídica.
+// Registros append-only: toda rectificación se inserta, nunca se sobrescribe.
+model CondicionConservacionProyecto {
+  id Int @id @default(autoincrement())
+  proyectoId Int
+  registradoPorId Int
+  referenciaAcuerdo String @db.VarChar(250)
+  periodoPactado String @db.VarChar(350)
+  condiciones String @db.Text
+  constanciaValidacion String @db.Text
+  creadaEn DateTime @default(now())
+  proyecto ProyectoConsultoria @relation(fields: [proyectoId], references: [id], onDelete: Restrict)
+  registradoPor Usuario @relation("ConservacionRegistradaPor", fields: [registradoPorId], references: [id], onDelete: Restrict)
+  @@index([proyectoId, id])
+}
+
+
+/// Configuracion de calendario VIS global; solo ADMIN puede activar versiones.
+/// No reprograma ciclos existentes ni habilita publicacion por si misma.
+model ConfiguracionVIS {
+  id              Int       @id @default(autoincrement())
+  version         String    @unique @db.VarChar(64)
+  estado          String    @default("ACTIVA") @db.VarChar(16)
+  duracionMinutos Int
+  calendario      Json
+  motivo          String    @db.Text
+  creadoPorId     Int
+  creadoPor       Usuario   @relation("VISConfigAdmin",fields:[creadoPorId],references:[id],onDelete:Restrict)
+  vigenteDesde    DateTime  @db.Timestamptz(3)
+  creadoEn        DateTime  @default(now()) @db.Timestamptz(3)
+  @@index([estado, vigenteDesde])
+}
+
+
+/// VIS291 - Outbox interno experimental para candidatos que han cumplido VIS.
+/// NO es una publicación visible, descarga, notificación o aprobación G2.
+/// recursoId refiere a la futura pieza comunicable, NO a EntregableProyecto.
+model PropuestaPublicacionVIS {
+  id Int @id @default(autoincrement())
+  proyectoId Int
+  recursoId Int
+  versionId Int
+  numeroVersion Int
+  sha256 String @db.VarChar(64)
+  revision Int @default(1)
+  estado String @default("PENDIENTE_REVALIDACION_FINAL") @db.VarChar(40)
+  elegibleEn DateTime @db.Timestamptz(3)
+  vigenteDesde DateTime @default(now()) @db.Timestamptz(3)
+  proyecto ProyectoConsultoria @relation(fields:[proyectoId],references:[id],onDelete:Restrict)
+  eventos EventoPropuestaVIS[]
+  publicaciones PublicacionConfirmadaVIS[]
+  @@unique([id,proyectoId,recursoId])
+  @@unique([proyectoId,recursoId])
+  @@index([proyectoId,versionId])
+}
+
+/// VIS338: commit confirmado de publicación, solo dentro del backend experimental.
+/// Un evento no implica que exista ruta HTTP, descarga o entrega contractual.
+/// Las revocaciones se registrarán en gobierno/ciclos; NO borrar este historial.
+model PublicacionConfirmadaVIS {
+  id Int @id @default(autoincrement())
+  propuestaId Int
+  revision Int
+  proyectoId Int
+  recursoId Int
+  versionId Int
+  numeroVersion Int
+  sha256 String @db.VarChar(64)
+  revisionGobierno Int
+  revisionCiclo Int
+  estado String @default("CONFIRMADA") @db.VarChar(24)
+  confirmadaEn DateTime @default(now()) @db.Timestamptz(3)
+  propuesta PropuestaPublicacionVIS @relation(fields:[propuestaId,proyectoId,recursoId], references:[id,proyectoId,recursoId],onDelete:Restrict)
+  proyecto ProyectoConsultoria @relation(fields:[proyectoId], references:[id],onDelete:Restrict)
+  @@unique([propuestaId,revision])
+  @@index([proyectoId,recursoId,confirmadaEn])
+  @@index([proyectoId,versionId])
+}
+
+/// Historial append-only para impedir pérdida de candidatos antiguos.
+model EventoPropuestaVIS {
+  id Int @id @default(autoincrement())
+  propuestaId Int
+  revision Int
+  versionId Int
+  numeroVersion Int
+  sha256 String @db.VarChar(64)
+  creadoEn DateTime @default(now()) @db.Timestamptz(3)
+  propuesta PropuestaPublicacionVIS @relation(fields:[propuestaId],references:[id],onDelete:Restrict)
+  @@unique([propuestaId,revision])
+}
+
+
+/// F3-ANA-294: gobierno interno de una pieza lógica comunicable; no es un
+/// documento G2, publicación, autorización de descarga ni una ruta HTTP.
+model GobiernoRecursoVIS {
+  id Int @id @default(autoincrement())
+  proyectoId Int
+  recursoId Int
+  revision Int @default(0)
+  comunicable Boolean @default(false)
+  versionClasificadaId Int?
+  numeroVersionClasificada Int?
+  sha256Clasificada String? @db.VarChar(64)
+  clasificadaPorId Int?
+  restringido Boolean @default(false)
+  versionRestringidaId Int?
+  restringidaPorId Int?
+  restringidaEn DateTime? @db.Timestamptz(3)
+  proyecto ProyectoConsultoria @relation(fields:[proyectoId],references:[id],onDelete:Restrict)
+  eventos EventoGobiernoVIS[]
+  @@unique([proyectoId,recursoId])
+  @@index([proyectoId,restringido])
+}
+
+/// Historial inmutable: clasificación o restricción excepcional.
+/// No almacenar contenido del documento ni secretos en justificación.
+model EventoGobiernoVIS {
+  id Int @id @default(autoincrement())
+  gobiernoId Int
+  revision Int
+  tipo String @db.VarChar(40)
+  actorId Int
+  versionId Int
+  numeroVersion Int
+  motivo String? @db.VarChar(32)
+  justificacion String? @db.VarChar(1000)
+  creadoEn DateTime @default(now()) @db.Timestamptz(3)
+  gobierno GobiernoRecursoVIS @relation(fields:[gobiernoId],references:[id],onDelete:Restrict)
+  actor Usuario @relation("GobiernoVISActor",fields:[actorId],references:[id],onDelete:Restrict)
+  @@unique([gobiernoId,revision])
+}
+
+
+/// F3-ANA-295 - Identidad canónica de piezas producidas por la consultoría.
+/// No vincula ni reutiliza evidencias G2 entregadas por la empresa.
+/// Registro de metadatos PRIVADO, sin documento publicado ni autorización de descarga.
+model PiezaComunicableVIS {
+  id Int @id @default(autoincrement())
+  proyectoId Int
+  responsableId Int
+  titulo String @db.VarChar(180)
+  clase String @default("DOCUMENTO_CONSULTOR") @db.VarChar(40)
+  estado String @default("BORRADOR") @db.VarChar(24)
+  numeroActual Int @default(0)
+  creadoEn DateTime @default(now()) @db.Timestamptz(3)
+  proyecto ProyectoConsultoria @relation(fields:[proyectoId],references:[id],onDelete:Restrict)
+  responsable Usuario @relation("PiezaVISResponsable",fields:[responsableId],references:[id],onDelete:Restrict)
+  versiones VersionPiezaComunicableVIS[]
+  @@unique([id,proyectoId])
+  @@index([proyectoId,responsableId])
+}
+
+/// Una versión NO es un archivo acreditado: SHA y bytes son metadatos declarados
+/// hasta que un futuro adaptador verifique el almacenamiento binario privado.
+model VersionPiezaComunicableVIS {
+  aceptacionDocumentalVIS AceptacionDocumentalVIS?
+  inspeccionesPrincipalVIS InspeccionPrincipalVIS[]
+  id Int @id @default(autoincrement())
+  proyectoId Int
+  piezaId Int
+  numero Int
+  sha256 String @db.VarChar(64)
+  nombreOriginal String @db.VarChar(180)
+  tamanoBytes Int
+  estado String @default("BORRADOR") @db.VarChar(32)
+  creadoPorId Int
+  creadoEn DateTime @default(now()) @db.Timestamptz(3)
+  pieza PiezaComunicableVIS @relation(fields:[piezaId,proyectoId],references:[id,proyectoId],onDelete:Restrict)
+  creador Usuario @relation("VersionPiezaVISCreador",fields:[creadoPorId],references:[id],onDelete:Restrict)
+  archivoPrivado ArchivoPrivadoVersionVIS?
+  @@unique([piezaId,numero])
+  @@unique([id,proyectoId])
+  @@index([proyectoId,piezaId])
+}
+
+/// F3-ANA-296: vinculacion interna de bytes verificados; no habilita publicacion.
+/// Un comprobante no sustituye autorizacion, revision, aceptacion ni VIS.
+model ArchivoPrivadoVersionVIS {
+  id Int @id @default(autoincrement())
+  proyectoId Int
+  versionId Int @unique
+  blobId String @unique @db.VarChar(36)
+  sha256 String @db.VarChar(64)
+  tamanoBytes Int
+  formato String @default("application/pdf") @db.VarChar(40)
+  registradoEn DateTime @default(now()) @db.Timestamptz(3)
+  version VersionPiezaComunicableVIS @relation(fields:[versionId,proyectoId],references:[id,proyectoId],onDelete:Restrict)
+  // La referencia es compuesta y 1:1: Prisma exige la unicidad de AMBOS campos.
+  // Se conserva versionId @unique para la búsqueda interna findUnique({versionId}).
+  @@unique([versionId,proyectoId])
+  @@index([proyectoId,versionId])
+}
+
+/// F3-ANA-301: inspección intencional del principal sobre versión clasificada.
+/// Registro histórico y plazo capturado; NO es aceptación documental ni publicación.
+/// SQL append-only para QA; el despliegue productivo sigue sin autorización.
+model InspeccionPrincipalVIS {
+  cicloOperativoVIS CicloOperativoVIS?
+  id Int @id @default(autoincrement())
+  proyectoId Int
+  recursoId Int
+  versionId Int
+  numeroVersion Int
+  principalId Int
+  revisionGobierno Int
+  sha256 String @db.VarChar(64)
+  configuracionVersion String @db.VarChar(64)
+  duracionMinutos Int
+  calendarioCapturado Json
+  inspeccionadaEn DateTime @db.Timestamptz(3)
+  venceEn DateTime @db.Timestamptz(3)
+  creadaEn DateTime @default(now()) @db.Timestamptz(3)
+  proyecto ProyectoConsultoria @relation(fields:[proyectoId],references:[id],onDelete:Restrict)
+  version VersionPiezaComunicableVIS @relation(fields:[versionId,proyectoId],references:[id,proyectoId],onDelete:Restrict)
+  principal Usuario @relation("InspeccionVISPrincipal",fields:[principalId],references:[id],onDelete:Restrict)
+  @@unique([versionId,principalId,revisionGobierno])
+  @@index([proyectoId,recursoId,creadaEn])
+}
+
+/// F3-ANA-302: aceptación documental explícita e INDEPENDIENTE de la
+/// inspección y el plazo VIS. No modifica ni reutiliza documentos/evidencias G2.
+/// Una aceptación corresponde exactamente a una versión; no hereda vigencia.
+model AceptacionDocumentalVIS {
+  id Int @id @default(autoincrement())
+  proyectoId Int
+  recursoId Int
+  versionId Int @unique
+  numeroVersion Int
+  sha256 String @db.VarChar(64)
+  principalId Int
+  aceptadaEn DateTime @db.Timestamptz(3)
+  creadaEn DateTime @default(now()) @db.Timestamptz(3)
+  proyecto ProyectoConsultoria @relation(fields:[proyectoId],references:[id],onDelete:Restrict)
+  version VersionPiezaComunicableVIS @relation(fields:[versionId,proyectoId],references:[id,proyectoId],onDelete:Restrict)
+  principal Usuario @relation("AceptacionVISPrincipal",fields:[principalId],references:[id],onDelete:Restrict)
+  @@unique([versionId,proyectoId])
+  @@index([proyectoId,recursoId,aceptadaEn])
+}
+
+/// VIS304: estado interno de espera/pausa por pieza, NO publica ni habilita descarga.
+/// El registro vigente se modifica con CAS; el historial EventoCicloVIS es append-only.
+model CicloOperativoVIS {
+  id Int @id @default(autoincrement())
+  proyectoId Int
+  recursoId Int
+  versionId Int
+  numeroVersion Int
+  inspeccionId Int @unique
+  revisionGobierno Int
+  sha256 String @db.VarChar(64)
+  venceEn DateTime @db.Timestamptz(3)
+  revision Int @default(1)
+  estado String @default("EN_ESPERA") @db.VarChar(24)
+  proyecto ProyectoConsultoria @relation(fields:[proyectoId],references:[id],onDelete:Restrict)
+  inspeccion InspeccionPrincipalVIS @relation(fields:[inspeccionId],references:[id],onDelete:Restrict)
+  eventos EventoCicloVIS[]
+  @@unique([proyectoId,recursoId])
+  @@index([proyectoId,versionId,estado])
+}
+
+/// VIS304: transición auditada sin reescribir ni borrar eventos antiguos.
+model EventoCicloVIS {
+  id Int @id @default(autoincrement())
+  cicloId Int
+  revision Int
+  tipo String @db.VarChar(24)
+  actorId Int
+  versionId Int
+  motivo String? @db.VarChar(500)
+  registradoEn DateTime @default(now()) @db.Timestamptz(3)
+  ciclo CicloOperativoVIS @relation(fields:[cicloId],references:[id],onDelete:Restrict)
+  @@unique([cicloId,revision])
+}
+
+/// ALT306: corte de operación por norma equivocada; presencia = restricción irreversible
+/// dentro de este laboratorio. No declara resueltos efectos contractuales ni da permisos.
+model RegistroCorteALT {
+  id Int @id @default(autoincrement())
+  proyectoId Int @unique
+  adminId Int
+  referencia String @db.VarChar(200)
+  justificacion String @db.VarChar(500)
+  creadoEn DateTime @default(now()) @db.Timestamptz(3)
+  proyecto ProyectoConsultoria @relation(fields:[proyectoId],references:[id],onDelete:Restrict)
+  admin Usuario @relation("CorteALTAdmin",fields:[adminId],references:[id],onDelete:Restrict)
+  eventos EventoCorteALT[]
+}
+
+/// ALT306: evento separado append-only, sin reaperturas ni efectos positivos.
+model EventoCorteALT {
+  id Int @id @default(autoincrement())
+  corteId Int
+  tipo String @db.VarChar(30)
+  actorId Int
+  referencia String @db.VarChar(200)
+  creadoEn DateTime @default(now()) @db.Timestamptz(3)
+  corte RegistroCorteALT @relation(fields:[corteId],references:[id],onDelete:Restrict)
+  actor Usuario @relation("EventoCorteALTActor",fields:[actorId],references:[id],onDelete:Restrict)
+  @@index([corteId,creadoEn])
+}

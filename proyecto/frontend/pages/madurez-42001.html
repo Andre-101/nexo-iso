@@ -1,0 +1,17 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="referrer" content="no-referrer"/><title>Madurez IA · NEXO ISO/IEC 42001</title><link rel="stylesheet" href="../styles.css"/><link rel="stylesheet" href="../css/madurez-42001.css"/><link rel="icon" href="../icon.svg"/></head>
+<body data-protected><main class="g1-layout" id="contenido">
+ <header class="page-heading workspace-heading"><div><span class="eyebrow">REPRESENTANTE · BORRADOR ORIENTATIVO ISO/IEC 42001:2023</span><h1>Autodiagnóstico de madurez de gestión de IA</h1>
+ <p>Cuestionario original orientativo para identificar información faltante. <strong>No es un instrumento normativo aprobado, no determina conformidad y no genera conclusión automática favorable.</strong></p>
+ <p>Debe responderlo la empresa; el consultor interpreta las evidencias. Las respuestas permanecen únicamente en memoria durante esta visita y <strong>no se envían automáticamente al servidor</strong>. El borrador exportado no acredita quién lo diligenció y puede contener información pendiente de verificar.</p></div></header>
+ <section class="g1-panel maturity-controls" aria-labelledby="confTitle"><h2 id="confTitle">Alcance y recursos</h2>
+ <label>Proyecto ISO/IEC 42001 <select id="maturityProject"><option value="">Elegir un proyecto autorizado…</option></select></label>
+ <p id="maturityProjectState" class="g1-muted" role="status">Consulta de proyectos pendiente.</p>
+ <div id="financeBox" class="g1-panel" hidden><div class="section-heading"><h3>Revisión de recursos financieros · 7.1</h3><button id="financeCheck" type="button" class="secondary">Consultar fuente autorizada</button></div>
+ <p>La fuente financiera es independiente y opcional. Una alerta requiere comprobación humana; no equivale a insolvencia ni a rechazo de certificación.</p><div id="financeStatus" role="status" aria-live="polite"></div><ul id="financeAlerts"></ul></div>
+ <p class="g1-muted">Escala: 0 sin práctica; 1 inicial; 2 documentada parcialmente; 3 aplicada y verificada; 4 medida y mejorada; N/A con justificación. Sin evidencia, no interpretes la respuesta como confirmación.</p></section>
+ <section class="g1-panel" aria-labelledby="questionsTitle"><div class="section-heading"><h2 id="questionsTitle">Preguntas para la empresa</h2><span id="maturityProgress" role="status" aria-live="polite">Cargando…</span></div>
+ <progress id="maturityMeter" class="maturity-meter" max="37" value="0" aria-label="Preguntas con respuesta completa"></progress><nav id="maturityIndex" class="maturity-index" aria-label="Ir a un ámbito del cuestionario"></nav><div id="maturityQuestions"></div><div class="g1-actions"><button type="button" id="maturityExport">Exportar respuestas para revisión</button><button type="button" id="maturityClear" class="secondary">Descartar respuestas locales</button></div>
+ <p id="maturityFeedback" role="status" aria-live="polite"></p></section></main>
+ <script src="../js/deployment.js"></script><script src="../js/core.js"></script><script src="../js/workspace-model.js"></script><script src="../js/shell.js"></script><script src="../js/maturity-model.js"></script><script src="../js/madurez-42001.js"></script>
+ </body></html>

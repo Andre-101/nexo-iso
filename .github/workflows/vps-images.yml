@@ -1,0 +1,162 @@
+name: NEXO | Auditar y publicar imágenes VPS
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+  packages: write
+concurrency:
+  group: nexo-images-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  security-and-tests:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: proyecto/package-lock.json
+      - name: Validar archivos JavaScript
+        run: |
+          find proyecto/src proyecto/prisma proyecto/frontend/js -type f -name '*.js' -print0 | xargs -0 -n 1 node --check
+      - name: Pruebas del frontend y seguridad del despliegue
+        run: node --test tests/frontend-unit.test.js tests/vps-security.test.js
+      - name: Instalar dependencias lockfile
+        working-directory: proyecto
+        run: npm ci --no-fund
+      - name: Auditar dependencias que llegan al runtime
+        working-directory: proyecto
+        run: npm audit --omit=dev --audit-level=high
+
+  smoke-local:
+    needs: security-and-tests
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+      - name: Preparar secretos exclusivos de la prueba
+        run: |
+          cp .env.local.example .env.local
+          bash scripts/prepare-local-secrets.sh
+      - name: Validar Compose
+        run: docker compose --env-file .env.local -f compose.local.yaml config --quiet
+      - name: Construir las 3 imágenes Docker de prueba
+        run: docker compose --env-file .env.local -f compose.local.yaml --profile bootstrap build
+      - name: Arrancar PostgreSQL y crear esquema en base NUEVA
+        run: |
+          docker compose --env-file .env.local -f compose.local.yaml up -d --wait db
+          docker compose --env-file .env.local -f compose.local.yaml --profile bootstrap run --rm --no-deps bootstrap
+      - name: Arrancar web + API y comprobar extremo a extremo
+        run: |
+          docker compose --env-file .env.local -f compose.local.yaml up -d --wait api web
+          curl --retry 12 --retry-connrefused --retry-delay 2 --fail --silent --show-error http://127.0.0.1:8080/healthz
+          curl --fail --silent --show-error http://127.0.0.1:8080/health
+          curl --fail --silent --show-error http://127.0.0.1:8080/
+          docker compose --env-file .env.local -f compose.local.yaml ps
+      - name: Crear ADMIN de prueba y verificar persistencia PostgreSQL
+        shell: bash
+        run: |
+          set -euo pipefail
+          # La cuenta existe SOLO en el runner; no imprime contraseñas ni tokens.
+          CI_ADMIN_PASS="$(openssl rand -hex 24)"
+          printf '{"email":"ci-admin@nexo.invalid","password":"%s"}' "$CI_ADMIN_PASS" | \
+            docker compose --env-file .env.local -f compose.local.yaml --profile bootstrap \
+              run --rm -T --no-deps -e BOOTSTRAP_ADMIN_STDIN=1 \
+              bootstrap node prisma/bootstrap-admin.js
+          CI_ADMIN_PASS="$CI_ADMIN_PASS" node <<'JS'
+          const assert = require('node:assert/strict');
+          (async () => {
+            const response = await fetch('http://127.0.0.1:8080/api/auth/login', {
+              method: 'POST', headers: {'Content-Type':'application/json'},
+              body: JSON.stringify({email:'ci-admin@nexo.invalid', password:process.env.CI_ADMIN_PASS})
+            });
+            const json = await response.json();
+            assert.equal(response.status, 200, 'login API de ADMIN');
+            assert.equal(json.usuario?.rol, 'ADMIN');
+            assert.equal(typeof json.token, 'string');
+            console.log('Login ADMIN verificado; token y contraseña no mostrados.');
+          })().catch(err => { console.error(err.message); process.exitCode=1; });
+          JS
+          unset CI_ADMIN_PASS
+          docker compose --env-file .env.local -f compose.local.yaml restart db
+          docker compose --env-file .env.local -f compose.local.yaml up -d --wait db
+          docker compose --env-file .env.local -f compose.local.yaml --profile bootstrap \
+            run --rm -T --no-deps bootstrap node -e \
+            'const{PrismaClient}=require("@prisma/client");const db=new PrismaClient(); db.usuario.count({where:{rol:"ADMIN"}}).then(n=>{if(n!==1)throw Error("El ADMIN no persiste en el volumen"); console.log("ADMIN persistente tras reiniciar PostgreSQL");}).catch(e=>{console.error(e.message);process.exitCode=1;}).finally(()=>db.$disconnect())'
+      - name: Logs en caso de error
+        if: failure()
+        run: docker compose --env-file .env.local -f compose.local.yaml logs --tail 120
+      - name: Detener contenedores de prueba (sin borrar volúmenes ajenos)
+        if: always()
+        run: docker compose --env-file .env.local -f compose.local.yaml down || true
+
+  scan-database:
+    needs: security-and-tests
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Escanear también PostgreSQL antes de publicar imágenes de Nexo
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: image
+          image-ref: postgres:16-alpine
+          format: table
+          vuln-type: os,library
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: '1'
+
+  publish:
+    needs: [security-and-tests, smoke-local, scan-database]
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - {name: web, dockerfile: infra/Dockerfile.web.vps, target: web}
+          - {name: api, dockerfile: infra/Dockerfile.vps, target: api}
+          - {name: bootstrap, dockerfile: infra/Dockerfile.vps, target: bootstrap}
+    steps:
+      - uses: actions/checkout@v6
+      - name: Normalizar usuario GHCR
+        id: owner
+        shell: bash
+        run: echo "value=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_OUTPUT"
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Construir imagen temporal para auditoría (runner, no VPS)
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          target: ${{ matrix.target }}
+          platforms: linux/amd64
+          load: true
+          tags: nexo-audit-${{ matrix.name }}:local
+          cache-from: type=gha,scope=nexo-${{ matrix.name }}
+          cache-to: type=gha,mode=max,scope=nexo-${{ matrix.name }}
+      - name: Análisis CVE de sistema y dependencias (bloquea HIGH/CRITICAL corregibles)
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: image
+          image-ref: nexo-audit-${{ matrix.name }}:local
+          format: table
+          vuln-type: os,library
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: '1'
+      - name: Publicar SOLO si el análisis pasó
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          target: ${{ matrix.target }}
+          platforms: linux/amd64
+          push: true
+          provenance: mode=max
+          sbom: true
+          tags: ghcr.io/${{ steps.owner.outputs.value }}/nexo-${{ matrix.name }}:sha-${{ github.sha }}
+          cache-from: type=gha,scope=nexo-${{ matrix.name }}

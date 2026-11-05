@@ -1,0 +1,31 @@
+# Secrets / data
+**/.env
+**/.env.*
+!**/.env.example
+!**/.env.vps.example
+!**/.env.local.example
+**/node_modules/
+**/private_uploads/
+**/uploads/
+**/CREDENCIALES_SOLO_DEMO_LOCAL.txt
+**/ENVIAR_RESULTADOS_*.zip
+**/G5_RESULTADO_*.json
+**/G5_RESULTADO_*.txt
+**/*.log
+.DS_Store
+
+# Operacion local reconstruida
+.runtime/
+DIAGNOSTICOS/
+
+# F3-ANA-234: evidencia Windows local
+RESULTADOS_BE01_F3_ANA_234_*.zip
+
+# Entorno adicional para pruebas y red
+.env.local
+.env.production
+.env.bridge
+.local-secrets/
+secrets/
+
+*.bak

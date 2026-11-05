@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#101b31" />
+  <link rel="manifest" href="../manifest.webmanifest" />
+  <link rel="icon" href="../icon.svg" type="image/svg+xml" />
+  <title>Áreas de evaluación · NEXO</title>
+  <link rel="stylesheet" href="../styles.css" />
+</head>
+<body data-protected>
+  <main class="dashboard-layout role-workspace">
+    <header class="page-heading workspace-heading"><div><span class="eyebrow">ESPACIO DE TRABAJO · CONSULTA</span><h1>Áreas de evaluación</h1><p class="muted">Revisa las áreas y preguntas disponibles del instrumento, según los permisos de tu sesión.</p></div><a href="./proyectos.html" class="secondary-link">Volver a proyectos</a></header>
+    <section class="g1-panel">
+      <div class="row-between">
+        <h2>Preguntas por área</h2>
+        <button id="refreshAreas">Actualizar</button>
+      </div>
+
+      <div id="areasContainer" class="areas"></div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="../js/deployment.js"></script><script src="../js/core.js"></script><script src="../js/workspace-model.js"></script><script src="../js/shell.js"></script><script src="../js/app.js"></script>
+  <script src="../js/register-sw.js"></script>
+</body>
+</html>

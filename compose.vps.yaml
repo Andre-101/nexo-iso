@@ -1,0 +1,142 @@
+# NEXO AISLADO: imágenes preconstruidas; sin proxy externo ni puertos publicados.
+# La red IPv6 compartida es opcional y se añade SOLO con compose.bridge-ipv6.yaml.
+name: nexo
+x-logs: &small-logs
+  driver: json-file
+  options: {max-size: "5m", max-file: "3"}
+services:
+  web:
+    image: ${NEXO_WEB_IMAGE:?Configure imagen web GHCR por SHA}
+    restart: unless-stopped
+    pull_policy: always
+    depends_on:
+      api: {condition: service_healthy}
+    networks:
+      app: {}
+    read_only: true
+    # tmpfs defaults to noexec,nosuid,nodev; keep a single, portable size option.
+    tmpfs:
+      - /tmp:size=32m
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    pids_limit: 32
+    mem_limit: 96m
+    cpus: "0.40"
+    logging: *small-logs
+    # No publica puertos del host. Solo accesible por red Docker compartida opcional.
+
+  api:
+    image: ${NEXO_API_IMAGE:?Configure imagen API GHCR por SHA}
+    restart: unless-stopped
+    pull_policy: always
+    depends_on:
+      db: {condition: service_healthy}
+    environment:
+      DATABASE_URL_FILE: /run/secrets/nexo_database_url
+      JWT_SECRET_FILE: /run/secrets/nexo_jwt_secret
+      NODE_OPTIONS: "--require=/app/src/config/load-secrets.js --max-old-space-size=384"
+      NODE_ENV: production
+      PORT: "3000"
+      DATA_MODE: production
+      REGISTRY_INTEGRATION_ENABLED: "0"
+      FINANCE_INTEGRATION_ENABLED: "0"
+      UPLOAD_DIR: /app/private_uploads
+      AI_ENABLED: ${AI_ENABLED:-0}
+      AI_PROVIDER: ${AI_PROVIDER:-anthropic}
+      AI_EXTERNAL_TRANSFER_APPROVED: ${AI_EXTERNAL_TRANSFER_APPROVED:-0}
+      ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-haiku-5-5}
+      ANTHROPIC_WORKSPACE_ID: ${ANTHROPIC_WORKSPACE_ID:-}
+      JWT_EXPIRES_IN: 8h
+    secrets:
+      - nexo_database_url
+      - nexo_jwt_secret
+    networks: [app, data, egress]
+    volumes:
+      - documents:/app/private_uploads
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    pids_limit: 128
+    mem_limit: 768m
+    cpus: "1.00"
+    logging: *small-logs
+
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: nexo
+      POSTGRES_DB: nexo
+      POSTGRES_PASSWORD_FILE: /run/secrets/nexo_db_password
+    secrets: [nexo_db_password]
+    volumes: [database:/var/lib/postgresql/data]
+    networks: [data]
+    command:
+      - postgres
+      - -c
+      - shared_buffers=64MB
+      - -c
+      - work_mem=2MB
+      - -c
+      - max_connections=25
+      - -c
+      - maintenance_work_mem=32MB
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -q -h 127.0.0.1 -U nexo -d nexo"]
+      interval: 10s
+      timeout: 4s
+      retries: 12
+      start_period: 20s
+    security_opt: [no-new-privileges:true]
+    pids_limit: 96
+    mem_limit: 512m
+    cpus: "0.70"
+    shm_size: 64m
+    logging: *small-logs
+    # Nunca publicar 5432.
+
+  # No arrancar al iniciar normalmente: solo esquema de DB nueva / alta ADMIN manual.
+  bootstrap:
+    profiles: [bootstrap]
+    image: ${NEXO_BOOTSTRAP_IMAGE:?Imagen administrativa GHCR por SHA}
+    pull_policy: always
+    restart: "no"
+    depends_on:
+      db: {condition: service_healthy}
+    environment:
+      DATABASE_URL_FILE: /run/secrets/nexo_database_url
+      JWT_SECRET_FILE: /run/secrets/nexo_jwt_secret
+      NODE_ENV: production
+      PORT: "3000"
+      WEB_PORT: "8080"
+    secrets: [nexo_database_url, nexo_jwt_secret]
+    networks: [app, data]
+    read_only: true
+    tmpfs: [/tmp:size=32m]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    pids_limit: 64
+    mem_limit: 640m
+    logging: *small-logs
+
+networks:
+  app:
+    internal: true
+  data:
+    internal: true
+  egress:
+    driver: bridge   # Solo API: salida HTTPS a gateways/IA, SIN puertos de entrada publicados.
+
+secrets:
+  nexo_db_password:
+    file: ${NEXO_SECRETS_DIR:?Ruta de secretos}/db_password
+  nexo_database_url:
+    file: ${NEXO_SECRETS_DIR:?Ruta de secretos}/database_url
+  nexo_jwt_secret:
+    file: ${NEXO_SECRETS_DIR:?Ruta de secretos}/jwt_secret
+
+volumes:
+  database: {}
+  documents: {}

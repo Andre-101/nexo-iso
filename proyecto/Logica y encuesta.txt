@@ -1,0 +1,540 @@
+# Formulario de Evaluación ISO 27001 — Preguntas por Área
+
+## Escala de Madurez (aplica a todas las preguntas)
+
+> **0** — No existe / No se ha considerado
+> **1** — Existe de manera informal, sin documentar
+> **2** — Existe y está documentado, pero no se aplica consistentemente
+> **3** — Documentado, aplicado y conocido por el equipo
+> **4** — Aplicado, medido y con seguimiento periódico
+> **5** — Optimizado, con mejora continua y auditorías internas
+
+---
+
+## ÁREA 1 — Organización y Personas (A.5 + A.6)
+
+*Evalúa cómo la empresa gestiona la seguridad a nivel organizacional y con su gente*
+
+---
+
+**1.1** ¿En qué nivel se encuentra la **política general de seguridad de la información** en su empresa?
+> Ej: documento que declara el compromiso de la empresa con proteger su información
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**1.2** ¿Cómo están definidos los **roles y responsabilidades** en materia de seguridad de la información?
+> Ej: existe un responsable de seguridad, un CISO, o alguien asignado formalmente
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**1.3** ¿En qué nivel está la **clasificación de la información** que maneja la empresa?
+> Ej: se etiqueta la información como pública, interna, confidencial, restringida
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**1.4** ¿Cómo gestiona la empresa la **seguridad en la contratación de personal**?
+> Ej: verificación de antecedentes, cláusulas de confidencialidad en contratos
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**1.5** ¿En qué nivel se realizan **capacitaciones en seguridad de la información** al personal?
+> Ej: inducciones, talleres anuales, campañas de phishing simulado
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**1.6** ¿Cómo se gestionan las **responsabilidades al finalizar una relación laboral**?
+> Ej: revocación de accesos, devolución de equipos, acuerdos de confidencialidad post-empleo
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**1.7** ¿En qué nivel existe un proceso disciplinario para **violaciones a la seguridad de la información**?
+> Ej: política de sanciones documentada, casos registrados y gestionados
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**1.8** ¿Cómo gestiona la empresa la **seguridad con terceros y proveedores**?
+> Ej: contratos con cláusulas de seguridad, evaluación de proveedores críticos
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**1.9** ¿En qué nivel se realiza la **gestión de activos de información**?
+> Ej: inventario de activos (datos, sistemas, equipos), asignación de propietarios
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**1.10** ¿Cómo está gestionado el **cumplimiento legal y normativo** relacionado con la información?
+> Ej: protección de datos personales, propiedad intelectual, normativas del sector
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**1.11** ¿En qué nivel existe una **gestión de riesgos de seguridad de la información**?
+> Ej: metodología de identificación, análisis y tratamiento de riesgos documentada
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**1.12** ¿Cómo se gestiona la **comunicación interna sobre incidentes y alertas** de seguridad?
+> Ej: canales definidos para reportar sospechas, correos de alerta, boletines internos
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**1.13** ¿En qué nivel está la **revisión independiente de la seguridad** (auditorías internas)?
+> Ej: auditorías periódicas al SGSI, revisiones por la dirección con actas
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**1.14** ¿Cómo gestiona la empresa el **acceso de personal externo** a sus instalaciones o sistemas?
+> Ej: registro de visitas, accesos temporales controlados, acompañamiento obligatorio
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**1.15** ¿En qué nivel existe un **programa de concientización continua** en seguridad para todos los empleados?
+> Ej: newsletters, simulacros, pósters, evaluaciones periódicas de conocimiento
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+### 📎 Soportes — Área 1: Organización y Personas
+
+> Suba los documentos que respalden sus respuestas anteriores. Recuerde: **sin soportes no es posible avanzar a certificación.**
+
+| Soporte sugerido | Archivo |
+|-----------------|---------|
+| Política de seguridad de la información | `[Subir archivo]` |
+| Organigrama con roles de seguridad | `[Subir archivo]` |
+| Contratos con cláusulas de confidencialidad | `[Subir archivo]` |
+| Registros de capacitaciones realizadas | `[Subir archivo]` |
+| Matriz de riesgos o análisis de riesgos | `[Subir archivo]` |
+| Acuerdos con proveedores (NDAs, contratos) | `[Subir archivo]` |
+| Otros documentos relevantes | `[Subir archivo]` |
+
+---
+
+## ÁREA 2 — Seguridad Física y del Entorno (A.7)
+
+*Evalúa la protección de las instalaciones, equipos y el entorno físico donde opera la empresa*
+
+---
+
+**2.1** ¿En qué nivel están definidos y controlados los **perímetros de seguridad física**?
+> Ej: zonas restringidas, recepción controlada, salas de servidores con acceso limitado
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**2.2** ¿Cómo se controla el **acceso físico a áreas sensibles** de la empresa?
+> Ej: tarjetas de acceso, biometría, llaves físicas con registro, guardias
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**2.3** ¿En qué nivel se protegen los **equipos de cómputo y servidores** contra amenazas físicas?
+> Ej: racks con llave, UPS, protección contra incendio, temperatura controlada
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**2.4** ¿Cómo se gestiona la **seguridad del cableado** de red y eléctrico?
+> Ej: cableado etiquetado, protegido en canaletas, separación entre red y eléctrico
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**2.5** ¿En qué nivel existe una política de **escritorio limpio y pantalla limpia**?
+> Ej: documentos guardados al salir, pantallas bloqueadas automáticamente, sin post-its con contraseñas
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**2.6** ¿Cómo se controla el **ingreso y salida de equipos** de las instalaciones?
+> Ej: registro de activos que salen, autorización formal, inventario actualizado
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**2.7** ¿En qué nivel está la **protección contra desastres naturales o ambientales**?
+> Ej: protección contra inundaciones, calor extremo, cortes de luz, plan de contingencia física
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**2.8** ¿Cómo se gestiona la **disposición segura de equipos y medios** al final de su vida útil?
+> Ej: borrado seguro de discos, destrucción de hardware, certificados de disposición
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**2.9** ¿En qué nivel existe **videovigilancia o monitoreo físico** de áreas críticas?
+> Ej: cámaras CCTV en accesos, sala de servidores, recepción, con registros conservados
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**2.10** ¿Cómo se controla el **trabajo remoto o fuera de las instalaciones** desde el punto de vista físico?
+> Ej: política de teletrabajo, uso de VPN, protección de equipos fuera de oficina
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**2.11** ¿En qué nivel se protegen los **medios de almacenamiento físico** (USB, discos externos, papel)?
+> Ej: armarios bajo llave para documentos físicos, política de uso de USB, cifrado de dispositivos
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**2.12** ¿Cómo se gestiona la **seguridad en áreas de carga, despacho o acceso público**?
+> Ej: zonas de recepción aisladas de áreas internas, control de paquetería, personal capacitado
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**2.13** ¿En qué nivel existe un **plan de mantenimiento preventivo** para equipos críticos?
+> Ej: mantenimientos programados, registros de intervenciones, contratos de soporte técnico
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**2.14** ¿Cómo se gestiona la **seguridad durante el transporte de información o equipos**?
+> Ej: cifrado de dispositivos en tránsito, mensajería segura, cadena de custodia documentada
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**2.15** ¿En qué nivel se realizan **inspecciones o auditorías físicas** periódicas de seguridad?
+> Ej: revisiones anuales de instalaciones, checklist de seguridad física, hallazgos documentados
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+### 📎 Soportes — Área 2: Seguridad Física
+
+| Soporte sugerido | Archivo |
+|-----------------|---------|
+| Plano o descripción de zonas de acceso restringido | `[Subir archivo]` |
+| Registro de control de accesos físicos | `[Subir archivo]` |
+| Política de escritorio/pantalla limpia | `[Subir archivo]` |
+| Certificados de disposición de equipos | `[Subir archivo]` |
+| Inventario de activos físicos | `[Subir archivo]` |
+| Registros de mantenimiento de equipos | `[Subir archivo]` |
+| Otros documentos relevantes | `[Subir archivo]` |
+
+---
+
+## ÁREA 3 — Tecnología y Control de Accesos (A.8)
+
+*Evalúa controles técnicos: redes, sistemas, accesos lógicos, cifrado y desarrollo seguro*
+
+---
+
+**3.1** ¿En qué nivel está la **gestión de identidades y control de acceso lógico**?
+> Ej: usuarios únicos por persona, sin cuentas compartidas, proceso formal de alta/baja de usuarios
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**3.2** ¿Cómo se gestiona la **autenticación segura** en los sistemas de la empresa?
+> Ej: contraseñas robustas, doble factor de autenticación (2FA), políticas de caducidad
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**3.3** ¿En qué nivel se aplica el **principio de mínimo privilegio** en los accesos?
+> Ej: cada usuario solo accede a lo que necesita para su función, revisión periódica de permisos
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**3.4** ¿Cómo está gestionada la **seguridad de la red** de la empresa?
+> Ej: firewall, segmentación de redes, red WiFi separada para invitados, monitoreo de tráfico
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**3.5** ¿En qué nivel se utilizan **técnicas de cifrado** para proteger la información?
+> Ej: HTTPS en aplicaciones web, cifrado de discos, cifrado en correos con información sensible
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**3.6** ¿Cómo se gestiona la **protección contra malware y código malicioso**?
+> Ej: antivirus actualizado, restricción de descargas, análisis periódicos, EDR en endpoints
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**3.7** ¿En qué nivel se realizan **copias de seguridad (backups)** de la información crítica?
+> Ej: backups automáticos, copias fuera de sitio o en la nube, pruebas periódicas de restauración
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**3.8** ¿Cómo se gestionan los **registros de auditoría y logs** de los sistemas?
+> Ej: logs habilitados en sistemas críticos, conservación mínima de 90 días, revisión periódica
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**3.9** ¿En qué nivel está la **gestión de vulnerabilidades técnicas** en los sistemas?
+> Ej: escaneos de vulnerabilidades, parches aplicados en tiempo, proceso de gestión de CVEs
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**3.10** ¿Cómo se controla el **uso de software** en los equipos de la empresa?
+> Ej: lista de software autorizado, prohibición de software pirata, inventario de licencias
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**3.11** ¿En qué nivel está la **seguridad en el desarrollo de software** (si aplica)?
+> Ej: revisión de código, pruebas de seguridad, ambientes separados (dev/test/prod), SDLC seguro
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**3.12** ¿Cómo se gestiona la **seguridad en servicios cloud** que utiliza la empresa?
+> Ej: configuración segura de AWS/Azure/GCP, control de quién accede, revisión de permisos cloud
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**3.13** ¿En qué nivel existe **monitoreo y detección de amenazas** en tiempo real?
+> Ej: SIEM, alertas automáticas de intentos de acceso, monitoreo de comportamiento anómalo
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**3.14** ¿Cómo se gestiona la **seguridad en dispositivos móviles** usados para trabajo?
+> Ej: MDM instalado, política BYOD, cifrado de dispositivos, borrado remoto disponible
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**3.15** ¿En qué nivel se realizan **pruebas de penetración o ethical hacking** en los sistemas?
+> Ej: pentests anuales por terceros, pruebas internas, resultados documentados y remediados
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+### 📎 Soportes — Área 3: Tecnología y Control de Accesos
+
+| Soporte sugerido | Archivo |
+|-----------------|---------|
+| Política de control de accesos | `[Subir archivo]` |
+| Diagrama de red o arquitectura de sistemas | `[Subir archivo]` |
+| Evidencia de backups (logs o capturas) | `[Subir archivo]` |
+| Reportes de vulnerabilidades o pentests | `[Subir archivo]` |
+| Política de uso de dispositivos móviles | `[Subir archivo]` |
+| Evidencia de antivirus / EDR activo | `[Subir archivo]` |
+| Otros documentos relevantes | `[Subir archivo]` |
+
+---
+
+## ÁREA 4 — Gestión de Incidentes y Continuidad (A.5.24–A.5.28 + A.8.16)
+
+*Evalúa cómo la empresa detecta, responde y se recupera ante incidentes de seguridad*
+
+---
+
+**4.1** ¿En qué nivel existe un **proceso formal para reportar incidentes** de seguridad?
+> Ej: canal definido para reportar (correo, formulario, sistema de tickets), responsable asignado
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**4.2** ¿Cómo se realiza la **clasificación y priorización de incidentes** de seguridad?
+> Ej: criterios para determinar severidad (crítico, alto, medio, bajo), tiempo de respuesta por nivel
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**4.3** ¿En qué nivel existe un **equipo o responsable de respuesta a incidentes**?
+> Ej: CSIRT interno, responsable designado, procedimiento de escalación definido
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**4.4** ¿Cómo se documentan y registran los **incidentes de seguridad ocurridos**?
+> Ej: bitácora de incidentes, tickets con causa raíz, lecciones aprendidas registradas
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**4.5** ¿En qué nivel existe un **plan de respuesta a incidentes** documentado y probado?
+> Ej: playbooks por tipo de incidente (ransomware, fuga de datos, acceso no autorizado)
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**4.6** ¿Cómo se gestiona la **comunicación durante un incidente** (interna y externa)?
+> Ej: a quién se notifica internamente, cuándo se notifica a clientes o reguladores, vocero definido
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**4.7** ¿En qué nivel se realizan **análisis post-incidente** (post-mortem)?
+> Ej: revisión de causa raíz, acciones correctivas implementadas, indicadores de reincidencia
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**4.8** ¿Cómo está gestionado el **plan de continuidad del negocio** (BCP)?
+> Ej: procesos críticos identificados, alternativas operativas definidas, plan documentado y aprobado
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**4.9** ¿En qué nivel existe un **plan de recuperación ante desastres** (DRP)?
+> Ej: RTO y RPO definidos, procedimiento de recuperación de sistemas, responsables asignados
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**4.10** ¿Cómo se realizan **pruebas y simulacros** del plan de continuidad o recuperación?
+> Ej: simulacros anuales, pruebas de restauración de backups, ejercicios de escritorio (tabletop)
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**4.11** ¿En qué nivel se gestionan las **notificaciones a autoridades o reguladores** ante incidentes graves?
+> Ej: conocimiento de plazos legales (ej: 72h GDPR), proceso definido, contactos de entidades reguladoras
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**4.12** ¿Cómo se gestiona la **preservación de evidencia digital** durante un incidente (forense)?
+> Ej: cadena de custodia digital, no alteración de evidencia, herramientas básicas de forense
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**4.13** ¿En qué nivel están identificadas las **dependencias críticas** de sistemas y proveedores?
+> Ej: mapeo de qué sistemas caídos paralizarían la operación, proveedores sin alternativa
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**4.14** ¿Cómo se gestiona la **seguridad de la información durante una crisis o desastre**?
+> Ej: acceso de emergencia a sistemas críticos, trabajo alternativo seguro, comunicación cifrada en crisis
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+**4.15** ¿En qué nivel se realizan **métricas e indicadores** de gestión de incidentes?
+> Ej: tiempo medio de detección (MTTD), tiempo medio de respuesta (MTTR), número de incidentes por mes
+
+`0 — 1 — 2 — 3 — 4 — 5`
+
+---
+
+### 📎 Soportes — Área 4: Gestión de Incidentes y Continuidad
+
+| Soporte sugerido | Archivo |
+|-----------------|---------|
+| Registro o bitácora de incidentes | `[Subir archivo]` |
+| Plan de respuesta a incidentes | `[Subir archivo]` |
+| Plan de continuidad del negocio (BCP) | `[Subir archivo]` |
+| Plan de recuperación ante desastres (DRP) | `[Subir archivo]` |
+| Evidencia de simulacros realizados | `[Subir archivo]` |
+| Métricas o reportes de incidentes | `[Subir archivo]` |
+| Otros documentos relevantes | `[Subir archivo]` |
+
+---
+
+## Lógica de decisión al finalizar el formulario
+
+```
+Puntaje promedio general:
+
+  0 – 1.5  → ❌ No apto. Se muestra mensaje:
+              "Su empresa no cuenta con los controles mínimos.
+               Le recomendamos iniciar un plan de implementación."
+
+  1.6 – 2.9 → ⚠️ En desarrollo. Mensaje:
+              "Tiene bases pero necesita madurar sus controles antes
+               de una auditoría formal."
+
+  3.0 – 3.9 → 🔵 Potencial de certificación. Se verifica soportes:
+              → Sin soportes: "Para avanzar debe adjuntar evidencias."
+              → Con soportes: ESCALA A EVALUADOR ✅
+
+  4.0 – 5.0 → 🟢 Nivel avanzado. Se verifica soportes:
+              → Sin soportes: mismo mensaje de bloqueo
+              → Con soportes: ESCALA A EVALUADOR PRIORITARIO ✅
+```
+
+---
+
+¿Listo para arrancar con el backend? Con esto ya tenemos todo el contenido definido. El siguiente paso natural sería armar la base de datos con estas preguntas precargadas y la lógica de puntaje.

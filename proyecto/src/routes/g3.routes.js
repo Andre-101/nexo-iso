@@ -1,0 +1,20 @@
+'use strict';
+const router=require('express').Router();
+const {verificarToken}=require('../middleware/auth.middleware');
+const wrap=require('../middleware/async');
+const g3=require('../controllers/g3.controller');
+const triaje347=require('../controllers/g3-triaje-347.controller');
+const {exigirPlanAceptado}=require('../middleware/plan-aceptado.middleware');
+router.use(verificarToken);
+router.get('/:proyectoId/ia/configuracion',wrap(g3.configuration));
+// F347: triaje sin identificadores, exclusivo de ADMIN/principal vigente.
+router.get('/:proyectoId/ia/triaje',wrap(triaje347.consultar));
+router.post('/:proyectoId/ia/desactivar',wrap(g3.desactivarProyecto));
+router.get('/:proyectoId/ia/versiones/:versionId/autorizacion',wrap(g3.permissions));
+router.post('/:proyectoId/ia/versiones/:versionId/autorizar',wrap(g3.authorize));
+router.post('/:proyectoId/ia/versiones/:versionId/revocar',wrap(g3.revoke));
+router.post('/:proyectoId/ia/versiones/:versionId/analizar',wrap(exigirPlanAceptado),wrap(g3.run));
+router.get('/:proyectoId/ia/versiones/:versionId/analisis',wrap(g3.list));
+router.get('/:proyectoId/ia/versiones/:versionId/resultados-automaticos',wrap(g3.listAutomatic));
+router.post('/:proyectoId/ia/hallazgos/:hallazgoId/revisar',wrap(g3.review));
+module.exports=router;

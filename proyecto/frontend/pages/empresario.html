@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#101b31" />
+  <link rel="manifest" href="../manifest.webmanifest" />
+  <link rel="icon" href="../icon.svg" type="image/svg+xml" />
+  <title>Mi empresa · NEXO</title>
+  <link rel="stylesheet" href="../styles.css" />
+</head>
+<body data-protected>
+  <main class="dashboard-layout role-workspace" data-workspace="EMPRESARIO">
+    <header class="page-heading workspace-heading">
+      <div><span class="eyebrow">ESPACIO DE TRABAJO · REPRESENTANTE</span>
+        <h1>Mi empresa</h1>
+        <p class="muted">Consulta la información empresarial vinculada a tu cuenta y accede a los expedientes y diagnósticos autorizados.</p></div>
+      <a href="./proyectos.html" class="button-link">Ver proyectos</a>
+    </header>
+
+    <section class="role-guide" aria-labelledby="companyGuideTitle"><div><span class="eyebrow">TU PAPEL EN EL PROCESO</span><h2 id="companyGuideTitle">Participa en tu proyecto, sin perder contexto.</h2><p>Responde los diagnósticos que correspondan, colabora con los documentos a tu cargo y consulta únicamente las entregas comunicadas.</p></div><nav class="role-guide-links" aria-label="Accesos para representantes"><a href="./evaluaciones.html">01 · Responder diagnósticos ↗</a><a href="./proyectos.html">02 · Revisar proyectos ↗</a></nav></section>
+    <section class="g1-panel representative-section">
+      <div class="row-between">
+        <h2>Información de mi organización</h2>
+      </div>
+      <p class="muted">El administrador registra y habilita las empresas vinculadas a un contrato. Aquí puedes consultar o actualizar los datos autorizados.</p>
+
+      <button id="refreshEmpresas">Actualizar empresas</button>
+      <div id="empresasContainer" class="list"></div>
+    </section>
+
+    <section class="g1-panel representative-section">
+      <h2>Consultas disponibles</h2>
+      <p class="muted">Los diagnósticos y expedientes muestran únicamente la información que tu cuenta tiene autorizada.</p>
+      <div class="workspace-inline-actions"><a href="./evaluaciones.html" class="secondary-link">Consultar diagnósticos</a><a href="./proyectos.html" class="secondary-link">Abrir expedientes</a></div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="../js/deployment.js"></script><script src="../js/core.js"></script><script src="../js/workspace-model.js"></script><script src="../js/shell.js"></script><script src="../js/app.js"></script>
+  <script src="../js/register-sw.js"></script>
+</body>
+</html>

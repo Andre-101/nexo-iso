@@ -1,0 +1,20 @@
+# OPCIONAL: usar solo con servicios registral y financiero contratados y autorizados.
+services:
+  api:
+    environment:
+      REGISTRY_INTEGRATION_ENABLED: "1"
+      FINANCE_INTEGRATION_ENABLED: "1"
+      REGISTRY_ADAPTER_URL: ${REGISTRY_ADAPTER_URL:?Se requiere el endpoint registral HTTPS real}
+      REGISTRY_ADAPTER_TOKEN_FILE: /run/secrets/nexo_registry_token
+      REGISTRY_LEGAL_BASIS_CONFIRMED: ${REGISTRY_LEGAL_BASIS_CONFIRMED:-0}
+      FINANCE_REAL_URL: ${FINANCE_REAL_URL:?Se requiere el endpoint financiero HTTPS real}
+      FINANCE_REAL_TOKEN_FILE: /run/secrets/nexo_finance_token
+      FINANCE_LEGAL_BASIS_CONFIRMED: ${FINANCE_LEGAL_BASIS_CONFIRMED:-0}
+    secrets:
+      - nexo_registry_token
+      - nexo_finance_token
+secrets:
+  nexo_registry_token:
+    file: ${NEXO_SECRETS_DIR:?Ruta de secretos}/registry_token
+  nexo_finance_token:
+    file: ${NEXO_SECRETS_DIR:?Ruta de secretos}/finance_token

@@ -1,0 +1,11 @@
+# Añadir SOLO DESPUÉS de validar NEXO sin v4nex.
+# No crea ni administra la red compartida. No se conecta la API ni la DB.
+services:
+  web:
+    networks:
+      shared_ipv6:
+        ipv6_address: ${NEXO_IPV6_ADDRESS:?Primero configurar red con scripts/setup-ipv6-network.sh}
+networks:
+  shared_ipv6:
+    external: true
+    name: ${NEXO_SHARED_NETWORK:?Nombre de red externo requerido}

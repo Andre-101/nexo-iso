@@ -1,0 +1,10 @@
+const wrap = require('../middleware/async');
+const router = require('express').Router();
+const ctrl = require('../controllers/soporte.controller');
+const { verificarToken } = require('../middleware/auth.middleware');
+const { upload, autorizarCarga } = require('../middleware/upload.middleware');
+router.post('/:evaluacionId', verificarToken, autorizarCarga, upload.single('archivo'), wrap(ctrl.subir));
+router.get('/archivo/:id', verificarToken, wrap(ctrl.descargar));
+router.get('/:evaluacionId', verificarToken, wrap(ctrl.listar));
+router.delete('/:id', verificarToken, wrap(ctrl.eliminar));
+module.exports = router;

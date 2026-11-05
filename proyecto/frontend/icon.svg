@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+  <rect width="192" height="192" rx="32" fill="#0b1220" />
+  <circle cx="96" cy="96" r="72" fill="#121a2b" stroke="#4f8cff" stroke-width="10" />
+  <text x="50%" y="52%" text-anchor="middle" fill="#eaf0ff" font-family="Inter, sans-serif" font-size="34" font-weight="700">ISO</text>
+  <text x="50%" y="74%" text-anchor="middle" fill="#9dc2ff" font-family="Inter, sans-serif" font-size="18">27001</text>
+</svg>
