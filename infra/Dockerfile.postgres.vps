@@ -1,0 +1,14 @@
+# syntax=docker/dockerfile:1
+# PostgreSQL 16 oficial, conservando entrypoint, PGDATA y datos existentes.
+# Trivy detecto alertas de stdlib Go en gosu 1.19 (Go 1.24.6).
+# Se reemplaza el binario por su-exec (C, paquete Alpine), manteniendo
+# la interfaz que utiliza el entrypoint: gosu postgres <comando>.
+FROM postgres:16-alpine AS db
+USER root
+RUN set -eux; \
+    apk add --no-cache su-exec; \
+    test -x /sbin/su-exec; \
+    rm -f /usr/local/bin/gosu /usr/local/bin/su-exec; \
+    ln -s /sbin/su-exec /usr/local/bin/gosu; \
+    test "$(gosu postgres id -u)" = '70'; \
+    test "$(gosu nobody id -u)" = '65534'
