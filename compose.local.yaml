@@ -73,7 +73,11 @@ services:
     logging: *small-logs
 
   db:
-    image: postgres:16-alpine
+    image: nexo-db:local
+    build:
+      context: .
+      dockerfile: infra/Dockerfile.postgres.vps
+      target: db
     restart: unless-stopped
     environment:
       POSTGRES_USER: nexo
