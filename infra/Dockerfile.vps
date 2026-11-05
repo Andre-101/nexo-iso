@@ -14,9 +14,21 @@ RUN DATABASE_URL='postgresql://build:build@127.0.0.1:5432/build?schema=public' \
 FROM dependencies AS production-dependencies
 RUN npm prune --omit=dev --no-audit --no-fund
 
-# Runtime: contiene motor Prisma, Poppler, CA, OpenSSL y solo dependencias reales.
-FROM node:22-bookworm-slim AS api
-RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates poppler-utils && rm -rf /var/lib/apt/lists/*
+# Runtime minimo: Debian 12 + solo el binario Node de la etapa de build.
+# No copiar /usr/local/lib/node_modules/npm ni npx a las imagenes de produccion.
+# Este cambio elimina dependencias vulnerables del gestor npm que no se ejecuta.
+FROM debian:bookworm-slim AS runtime-base
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends ca-certificates openssl libstdc++6 passwd && \
+    groupadd --gid 1000 node && \
+    useradd --uid 1000 --gid node --create-home --home-dir /home/node --shell /usr/sbin/nologin node && \
+    rm -rf /var/lib/apt/lists/*
+COPY --from=dependencies /usr/local/bin/node /usr/local/bin/node
+RUN node --version && test ! -e /usr/local/bin/npm && test ! -d /usr/local/lib/node_modules/npm
+
+# Runtime API: Poppler, CA, OpenSSL, Prisma y dependencias de produccion.
+FROM runtime-base AS api
+RUN apt-get update && apt-get install -y --no-install-recommends poppler-utils && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=production-dependencies --chown=node:node /app/node_modules ./node_modules
 # Preservar la salida generada por Prisma; npm prune puede depurar rutas no declaradas.
@@ -33,8 +45,7 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=25s --retries=3 CMD node 
 CMD ["node", "src/server.js"]
 
 # Herramienta administrativa aparte; NO ejecutarla automáticamente en cada deploy.
-FROM node:22-bookworm-slim AS bootstrap
-RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates && rm -rf /var/lib/apt/lists/*
+FROM runtime-base AS bootstrap
 WORKDIR /app
 COPY --from=dependencies /app/node_modules ./node_modules
 COPY --chown=node:node proyecto/prisma ./prisma

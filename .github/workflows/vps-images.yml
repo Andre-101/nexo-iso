@@ -115,10 +115,47 @@ jobs:
           ignore-unfixed: true
           exit-code: '1'
 
+  scan-runtime:
+    needs: security-and-tests
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {name: web, dockerfile: infra/Dockerfile.web.vps, target: web}
+          - {name: api, dockerfile: infra/Dockerfile.vps, target: api}
+          - {name: bootstrap, dockerfile: infra/Dockerfile.vps, target: bootstrap}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: docker/setup-buildx-action@v4
+      - name: Construir imagen temporal para auditoria pre-merge
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          target: ${{ matrix.target }}
+          platforms: linux/amd64
+          load: true
+          tags: nexo-premerge-${{ matrix.name }}:scan
+          cache-from: type=gha,scope=nexo-${{ matrix.name }}
+          cache-to: type=gha,mode=max,scope=nexo-${{ matrix.name }}
+      - name: Escanear imagen del runtime antes de permitir merge
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: image
+          image-ref: nexo-premerge-${{ matrix.name }}:scan
+          format: table
+          vuln-type: os,library
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: '1'
+
   publish:
     # PR: solo validaciones; rama main (push o ejecucion manual): publicar tras aprobar controles.
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-    needs: [security-and-tests, smoke-local, scan-database]
+    needs: [security-and-tests, smoke-local, scan-database, scan-runtime]
     runs-on: ubuntu-24.04
     permissions:
       contents: read
