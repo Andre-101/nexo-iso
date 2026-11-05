@@ -1,6 +1,8 @@
 # syntax=docker/dockerfile:1
-# Nginx estable con correcciones divulgadas en octubre de 2026.
-FROM nginx:1.30.6-alpine AS web
+# Nginx stable Alpine slim: elimina utilidades innecesarias del runtime.
+# Aplicar actualizaciones Alpine de seguridad en cada reconstruccion.
+FROM nginx:1.30.6-alpine-slim AS web
+RUN apk --no-cache upgrade
 COPY infra/nginx.vps.conf /etc/nginx/nginx.conf
 COPY proyecto/frontend/ /usr/share/nginx/html/
 RUN rm -f /etc/nginx/conf.d/default.conf && \
