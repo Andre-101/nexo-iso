@@ -194,7 +194,10 @@ test('PostgreSQL sustituye gosu-Go por su-exec y escanea la imagen final', () =>
   const db=source('infra/Dockerfile.postgres.vps');
   const workflow=source('.github/workflows/vps-images.yml');
   const local=source('compose.local.yaml');
-  assert.match(db,/FROM postgres:16-alpine AS db/);
+  assert.ok(db.includes('FROM postgres:16-alpine AS prepared'));
+  assert.ok(db.includes('FROM scratch AS db'));
+  assert.ok(db.includes('COPY --from=prepared / /'));
+  assert.ok(db.includes('STOPSIGNAL SIGINT'));
   assert.match(db,/apk add --no-cache su-exec/);
   assert.match(db,/rm -f \/usr\/local\/bin\/gosu/);
   assert.match(db,/ln -s \/sbin\/su-exec \/usr\/local\/bin\/gosu/);
@@ -202,5 +205,6 @@ test('PostgreSQL sustituye gosu-Go por su-exec y escanea la imagen final', () =>
   assert.match(local,/dockerfile: infra\/Dockerfile\.postgres\.vps/);
   assert.match(workflow,/image-ref: nexo-db:scan/);
   assert.match(workflow,/\{name: db, dockerfile: infra\/Dockerfile\.postgres\.vps, target: db\}/);
-  assert.match(workflow,/if: github.event_name == 'workflow_dispatch'/);
+  assert.ok(workflow.includes('  push:'));
+  assert.ok(workflow.includes('github.ref == \'refs/heads/main\''));
 });
