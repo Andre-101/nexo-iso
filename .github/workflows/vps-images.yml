@@ -1,8 +1,10 @@
 name: NEXO | Auditar y publicar imágenes VPS
 on:
-  workflow_dispatch:
+  push:
+    branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
 permissions:
   contents: read
 concurrency:
@@ -114,7 +116,8 @@ jobs:
           exit-code: '1'
 
   publish:
-    if: github.event_name == 'workflow_dispatch'
+    # PR: solo validaciones; rama main (push o ejecucion manual): publicar tras aprobar controles.
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     needs: [security-and-tests, smoke-local, scan-database]
     runs-on: ubuntu-24.04
     permissions:
