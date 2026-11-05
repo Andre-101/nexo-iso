@@ -1,9 +1,12 @@
 # syntax=docker/dockerfile:1
-# PostgreSQL 16 oficial, conservando entrypoint, PGDATA y datos existentes.
-# Trivy detecto alertas de stdlib Go en gosu 1.19 (Go 1.24.6).
-# Se reemplaza el binario por su-exec (C, paquete Alpine), manteniendo
-# la interfaz que utiliza el entrypoint: gosu postgres <comando>.
-FROM postgres:16-alpine AS db
+# PostgreSQL 16 Alpine: capa final limpia, sin conservar el gosu compilado
+# con Go vulnerable en las capas heredadas de la imagen oficial.
+#
+# El stage "prepared" conserva el rootfs oficial y reemplaza gosu por su-exec.
+# El stage final FROM scratch copia UNICAMENTE el rootfs resultante, sin
+# capas historicas que contengan el ejecutable anterior.
+# Se preservan PGDATA, entrypoint, stop signal, volumen y puerto oficial.
+FROM postgres:16-alpine AS prepared
 USER root
 RUN set -eux; \
     apk add --no-cache su-exec; \
@@ -12,3 +15,17 @@ RUN set -eux; \
     ln -s /sbin/su-exec /usr/local/bin/gosu; \
     test "$(gosu postgres id -u)" = '70'; \
     test "$(gosu nobody id -u)" = '65534'
+
+FROM scratch AS db
+COPY --from=prepared / /
+ENV LANG=en_US.utf8 \
+    PG_MAJOR=16 \
+    PGDATA=/var/lib/postgresql/data \
+    PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+USER root
+WORKDIR /
+VOLUME /var/lib/postgresql/data
+EXPOSE 5432
+STOPSIGNAL SIGINT
+ENTRYPOINT ["docker-entrypoint.sh"]
+CMD ["postgres"]
